@@ -51,75 +51,109 @@ export class DatabaseStorage implements IStorage {
       await db.insert(categories).values(defaultCategories);
     } catch (error) {
       // Ignore errors - table might not exist yet
-      console.log("Default categories initialization skipped:", error.message);
+      console.log("Default categories initialization skipped:", (error as Error).message);
     }
   }
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+    return await db.select().from(categories);
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const id = randomUUID();
-    const category: Category = {
-      id,
+    const [category] = await db.insert(categories).values({
       name: insertCategory.name,
       description: insertCategory.description || null,
-      color: insertCategory.color || "#3B82F6",
-      createdAt: new Date(),
-    };
-    this.categories.set(id, category);
+      color: insertCategory.color || "#3B82F6"
+    }).returning();
     return category;
   }
 
   async updateCategory(id: string, update: Partial<InsertCategory>): Promise<Category | undefined> {
-    const category = this.categories.get(id);
-    if (!category) return undefined;
-
-    const updated = { ...category, ...update };
-    this.categories.set(id, updated);
-    return updated;
+    const [category] = await db.update(categories)
+      .set({
+        ...(update.name && { name: update.name }),
+        ...(update.description !== undefined && { description: update.description || null }),
+        ...(update.color && { color: update.color })
+      })
+      .where(eq(categories.id, id))
+      .returning();
+    return category;
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    return this.categories.delete(id);
+    const result = await db.delete(categories).where(eq(categories.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
-  // Clients
+  // Clients  
   async getClients(): Promise<ClientWithCategory[]> {
-    const clients = Array.from(this.clients.values());
-    return clients.map(client => ({
-      ...client,
-      category: client.categoryId ? this.categories.get(client.categoryId) : undefined,
+    const result = await db
+      .select({
+        client: clients,
+        category: categories,
+      })
+      .from(clients)
+      .leftJoin(categories, eq(clients.categoryId, categories.id));
+    
+    return result.map(row => ({
+      ...row.client,
+      category: row.category || undefined,
     }));
   }
 
   async getClient(id: string): Promise<ClientWithCategory | undefined> {
-    const client = this.clients.get(id);
-    if (!client) return undefined;
-
+    const [result] = await db
+      .select({
+        client: clients,
+        category: categories,
+      })
+      .from(clients)
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .where(eq(clients.id, id));
+    
+    if (!result) return undefined;
+    
     return {
-      ...client,
-      category: client.categoryId ? this.categories.get(client.categoryId) : undefined,
+      ...result.client,
+      category: result.category || undefined,
     };
   }
 
   async getClientsByStatus(status: string): Promise<ClientWithCategory[]> {
-    const clients = await this.getClients();
-    return clients.filter(client => client.status === status);
+    const result = await db
+      .select({
+        client: clients,
+        category: categories,
+      })
+      .from(clients)
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .where(eq(clients.status, status as any));
+    
+    return result.map(row => ({
+      ...row.client,
+      category: row.category || undefined,
+    }));
   }
 
   async getClientsByCategory(categoryId: string): Promise<ClientWithCategory[]> {
-    const clients = await this.getClients();
-    return clients.filter(client => client.categoryId === categoryId);
+    const result = await db
+      .select({
+        client: clients,
+        category: categories,
+      })
+      .from(clients)
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .where(eq(clients.categoryId, categoryId));
+    
+    return result.map(row => ({
+      ...row.client,
+      category: row.category || undefined,
+    }));
   }
 
   async createClient(insertClient: InsertClient): Promise<Client> {
-    const id = randomUUID();
-    const now = new Date();
-    const client: Client = {
-      id,
+    const [client] = await db.insert(clients).values({
       name: insertClient.name,
       company: insertClient.company || null,
       email: insertClient.email,
@@ -129,122 +163,158 @@ export class DatabaseStorage implements IStorage {
       categoryId: insertClient.categoryId || null,
       status: (insertClient.status as any) || "nuevo",
       notes: insertClient.notes || null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.clients.set(id, client);
+    }).returning();
     return client;
   }
 
   async updateClient(id: string, update: Partial<InsertClient>): Promise<Client | undefined> {
-    const client = this.clients.get(id);
-    if (!client) return undefined;
-
-    const updated: Client = { 
-      ...client,
-      ...(update.name && { name: update.name }),
-      ...(update.company !== undefined && { company: update.company }),
-      ...(update.email && { email: update.email }),
-      ...(update.phone && { phone: update.phone }),
-      ...(update.whatsapp !== undefined && { whatsapp: update.whatsapp }),
-      ...(update.channel !== undefined && { channel: update.channel }),
-      ...(update.categoryId !== undefined && { categoryId: update.categoryId }),
-      ...(update.status && { status: update.status as any }),
-      ...(update.notes !== undefined && { notes: update.notes }),
-      updatedAt: new Date() 
-    };
-    this.clients.set(id, updated);
-    return updated;
+    const [client] = await db.update(clients)
+      .set({
+        ...(update.name && { name: update.name }),
+        ...(update.company !== undefined && { company: update.company }),
+        ...(update.email && { email: update.email }),
+        ...(update.phone && { phone: update.phone }),
+        ...(update.whatsapp !== undefined && { whatsapp: update.whatsapp }),
+        ...(update.channel !== undefined && { channel: update.channel }),
+        ...(update.categoryId !== undefined && { categoryId: update.categoryId }),
+        ...(update.status && { status: update.status as any }),
+        ...(update.notes !== undefined && { notes: update.notes }),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(clients.id, id))
+      .returning();
+    return client;
   }
 
   async deleteClient(id: string): Promise<boolean> {
-    return this.clients.delete(id);
+    const result = await db.delete(clients).where(eq(clients.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Tasks
   async getTasks(): Promise<TaskWithClient[]> {
-    const tasks = Array.from(this.tasks.values());
-    return tasks.map(task => ({
-      ...task,
-      client: task.clientId ? this.clients.get(task.clientId) : undefined,
+    const result = await db
+      .select({
+        task: tasks,
+        client: clients,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id));
+    
+    return result.map(row => ({
+      ...row.task,
+      client: row.client || undefined,
     }));
   }
 
   async getTask(id: string): Promise<TaskWithClient | undefined> {
-    const task = this.tasks.get(id);
-    if (!task) return undefined;
-
+    const [result] = await db
+      .select({
+        task: tasks,
+        client: clients,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .where(eq(tasks.id, id));
+    
+    if (!result) return undefined;
+    
     return {
-      ...task,
-      client: task.clientId ? this.clients.get(task.clientId) : undefined,
+      ...result.task,
+      client: result.client || undefined,
     };
   }
 
   async getTasksByClient(clientId: string): Promise<TaskWithClient[]> {
-    const tasks = await this.getTasks();
-    return tasks.filter(task => task.clientId === clientId);
+    const result = await db
+      .select({
+        task: tasks,
+        client: clients,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .where(eq(tasks.clientId, clientId));
+    
+    return result.map(row => ({
+      ...row.task,
+      client: row.client || undefined,
+    }));
   }
 
   async getTasksByStatus(status: string): Promise<TaskWithClient[]> {
-    const tasks = await this.getTasks();
-    return tasks.filter(task => task.status === status);
+    const result = await db
+      .select({
+        task: tasks,
+        client: clients,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .where(eq(tasks.status, status as any));
+    
+    return result.map(row => ({
+      ...row.task,
+      client: row.client || undefined,
+    }));
   }
 
   async getPendingTasks(): Promise<TaskWithClient[]> {
-    const tasks = await this.getTasks();
-    return tasks.filter(task => task.status === "pendiente")
-      .sort((a, b) => {
-        // Sort by priority and due date
-        const priorityOrder = { urgente: 4, alta: 3, media: 2, baja: 1 };
-        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-          return priorityOrder[b.priority] - priorityOrder[a.priority];
-        }
-        if (a.dueDate && b.dueDate) {
-          return a.dueDate.getTime() - b.dueDate.getTime();
-        }
-        return 0;
-      });
+    const result = await db
+      .select({
+        task: tasks,
+        client: clients,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .where(eq(tasks.status, "pendiente"));
+    
+    return result.map(row => ({
+      ...row.task,
+      client: row.client || undefined,
+    })).sort((a, b) => {
+      // Sort by priority and due date
+      const priorityOrder = { urgente: 4, alta: 3, media: 2, baja: 1 };
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
+      }
+      if (a.dueDate && b.dueDate) {
+        return a.dueDate.getTime() - b.dueDate.getTime();
+      }
+      return 0;
+    });
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const id = randomUUID();
-    const now = new Date();
-    const task: Task = {
-      id,
+    const [task] = await db.insert(tasks).values({
       title: insertTask.title,
       description: insertTask.description || null,
       clientId: insertTask.clientId || null,
       priority: (insertTask.priority as any) || "media",
       status: (insertTask.status as any) || "pendiente",
       dueDate: insertTask.dueDate || null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.tasks.set(id, task);
+    }).returning();
     return task;
   }
 
   async updateTask(id: string, update: Partial<InsertTask>): Promise<Task | undefined> {
-    const task = this.tasks.get(id);
-    if (!task) return undefined;
-
-    const updated: Task = { 
-      ...task,
-      ...(update.title && { title: update.title }),
-      ...(update.description !== undefined && { description: update.description }),
-      ...(update.clientId !== undefined && { clientId: update.clientId }),
-      ...(update.priority && { priority: update.priority as any }),
-      ...(update.status && { status: update.status as any }),
-      ...(update.dueDate !== undefined && { dueDate: update.dueDate }),
-      updatedAt: new Date() 
-    };
-    this.tasks.set(id, updated);
-    return updated;
+    const [task] = await db.update(tasks)
+      .set({
+        ...(update.title && { title: update.title }),
+        ...(update.description !== undefined && { description: update.description }),
+        ...(update.clientId !== undefined && { clientId: update.clientId }),
+        ...(update.priority && { priority: update.priority as any }),
+        ...(update.status && { status: update.status as any }),
+        ...(update.dueDate !== undefined && { dueDate: update.dueDate }),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(tasks.id, id))
+      .returning();
+    return task;
   }
 
   async deleteTask(id: string): Promise<boolean> {
-    return this.tasks.delete(id);
+    const result = await db.delete(tasks).where(eq(tasks.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
