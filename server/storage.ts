@@ -1,5 +1,7 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, categories, clients, tasks } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -28,38 +30,29 @@ export interface IStorage {
   deleteTask(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private categories: Map<string, Category>;
-  private clients: Map<string, Client>;
-  private tasks: Map<string, Task>;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.categories = new Map();
-    this.clients = new Map();
-    this.tasks = new Map();
-
-    // Initialize with default categories
+    // Initialize with default categories on first run
     this.initializeDefaultCategories();
   }
 
-  private initializeDefaultCategories() {
-    const defaultCategories = [
-      { name: "Autónomo", description: "Servicios para trabajadores autónomos y freelancers", color: "#3B82F6" },
-      { name: "Impuestos", description: "Gestión de declaraciones fiscales y tributación", color: "#EF4444" },
-      { name: "Informe", description: "Elaboración de informes contables y financieros", color: "#10B981" },
-    ];
+  private async initializeDefaultCategories() {
+    try {
+      // Check if categories already exist
+      const existingCategories = await db.select().from(categories).limit(1);
+      if (existingCategories.length > 0) return; // Already initialized
+      
+      const defaultCategories = [
+        { name: "Autónomo", description: "Servicios para trabajadores autónomos y freelancers", color: "#3B82F6" },
+        { name: "Impuestos", description: "Gestión de declaraciones fiscales y tributación", color: "#EF4444" },
+        { name: "Informe", description: "Elaboración de informes contables y financieros", color: "#10B981" },
+      ];
 
-    defaultCategories.forEach(cat => {
-      const id = randomUUID();
-      const category: Category = {
-        id,
-        name: cat.name,
-        description: cat.description,
-        color: cat.color,
-        createdAt: new Date(),
-      };
-      this.categories.set(id, category);
-    });
+      await db.insert(categories).values(defaultCategories);
+    } catch (error) {
+      // Ignore errors - table might not exist yet
+      console.log("Default categories initialization skipped:", error.message);
+    }
   }
 
   // Categories
