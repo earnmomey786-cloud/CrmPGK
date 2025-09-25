@@ -1,0 +1,273 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertClientSchema, insertTaskSchema, insertCategorySchema } from "@shared/schema";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Categories routes
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching categories" });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const validatedData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(validatedData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating category" });
+      }
+    }
+  });
+
+  app.put("/api/categories/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(id, validatedData);
+      
+      if (!category) {
+        res.status(404).json({ message: "Category not found" });
+        return;
+      }
+      
+      res.json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error updating category" });
+      }
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCategory(id);
+      
+      if (!success) {
+        res.status(404).json({ message: "Category not found" });
+        return;
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting category" });
+    }
+  });
+
+  // Clients routes
+  app.get("/api/clients", async (req, res) => {
+    try {
+      const { status, category } = req.query;
+      
+      let clients;
+      if (status) {
+        clients = await storage.getClientsByStatus(status as string);
+      } else if (category) {
+        clients = await storage.getClientsByCategory(category as string);
+      } else {
+        clients = await storage.getClients();
+      }
+      
+      res.json(clients);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching clients" });
+    }
+  });
+
+  app.get("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const client = await storage.getClient(id);
+      
+      if (!client) {
+        res.status(404).json({ message: "Client not found" });
+        return;
+      }
+      
+      res.json(client);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching client" });
+    }
+  });
+
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const validatedData = insertClientSchema.parse(req.body);
+      const client = await storage.createClient(validatedData);
+      res.status(201).json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid client data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating client" });
+      }
+    }
+  });
+
+  app.put("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertClientSchema.partial().parse(req.body);
+      const client = await storage.updateClient(id, validatedData);
+      
+      if (!client) {
+        res.status(404).json({ message: "Client not found" });
+        return;
+      }
+      
+      res.json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid client data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error updating client" });
+      }
+    }
+  });
+
+  app.delete("/api/clients/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteClient(id);
+      
+      if (!success) {
+        res.status(404).json({ message: "Client not found" });
+        return;
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting client" });
+    }
+  });
+
+  // Tasks routes
+  app.get("/api/tasks", async (req, res) => {
+    try {
+      const { client, status, pending } = req.query;
+      
+      let tasks;
+      if (pending === "true") {
+        tasks = await storage.getPendingTasks();
+      } else if (client) {
+        tasks = await storage.getTasksByClient(client as string);
+      } else if (status) {
+        tasks = await storage.getTasksByStatus(status as string);
+      } else {
+        tasks = await storage.getTasks();
+      }
+      
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching tasks" });
+    }
+  });
+
+  app.get("/api/tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const task = await storage.getTask(id);
+      
+      if (!task) {
+        res.status(404).json({ message: "Task not found" });
+        return;
+      }
+      
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching task" });
+    }
+  });
+
+  app.post("/api/tasks", async (req, res) => {
+    try {
+      const validatedData = insertTaskSchema.parse(req.body);
+      const task = await storage.createTask(validatedData);
+      res.status(201).json(task);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid task data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating task" });
+      }
+    }
+  });
+
+  app.put("/api/tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertTaskSchema.partial().parse(req.body);
+      const task = await storage.updateTask(id, validatedData);
+      
+      if (!task) {
+        res.status(404).json({ message: "Task not found" });
+        return;
+      }
+      
+      res.json(task);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid task data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error updating task" });
+      }
+    }
+  });
+
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteTask(id);
+      
+      if (!success) {
+        res.status(404).json({ message: "Task not found" });
+        return;
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting task" });
+    }
+  });
+
+  // Stats endpoint for dashboard
+  app.get("/api/stats", async (req, res) => {
+    try {
+      const clients = await storage.getClients();
+      const tasks = await storage.getTasks();
+      
+      const pipelineStats = {
+        nuevo: clients.filter(c => c.status === "nuevo").length,
+        "presupuesto-enviado": clients.filter(c => c.status === "presupuesto-enviado").length,
+        "presupuesto-pagado": clients.filter(c => c.status === "presupuesto-pagado").length,
+        "en-tareas": clients.filter(c => c.status === "en-tareas").length,
+        "terminado": clients.filter(c => c.status === "terminado").length,
+      };
+      
+      const stats = {
+        totalClients: clients.length,
+        pendingTasks: tasks.filter(t => t.status === "pendiente").length,
+        pipelineStats,
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching stats" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
