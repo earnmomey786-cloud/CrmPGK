@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientSchema, insertTaskSchema, insertCategorySchema } from "@shared/schema";
+import { insertClientSchema, insertTaskSchema, insertCategorySchema, insertClientStatusHistorySchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -150,6 +150,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Error deleting client" });
+    }
+  });
+
+  // Client Status History routes
+  app.get("/api/clients/:id/history", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const history = await storage.getClientStatusHistory(id);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching client status history" });
+    }
+  });
+
+  app.post("/api/clients/:id/history", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertClientStatusHistorySchema.parse({
+        ...req.body,
+        clientId: id
+      });
+      const historyEntry = await storage.createStatusHistoryEntry(validatedData);
+      res.status(201).json(historyEntry);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid status history data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error creating status history entry" });
+      }
     }
   });
 
