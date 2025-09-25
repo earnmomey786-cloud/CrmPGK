@@ -222,7 +222,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", async (req, res) => {
     try {
-      const validatedData = insertTaskSchema.parse(req.body);
+      // Convert dueDate string to Date if present
+      const processedBody = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
+      };
+      
+      const validatedData = insertTaskSchema.parse(processedBody);
       const task = await storage.createTask(validatedData);
       res.status(201).json(task);
     } catch (error) {
@@ -237,7 +243,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/tasks/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const validatedData = insertTaskSchema.partial().parse(req.body);
+      
+      // Convert dueDate string to Date if present
+      const processedBody = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : req.body.dueDate,
+      };
+      
+      const validatedData = insertTaskSchema.partial().parse(processedBody);
       const task = await storage.updateTask(id, validatedData);
       
       if (!task) {
