@@ -99,10 +99,12 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // Convert empty string to null for clientId and description
+    // Convert dueDate to proper Date object or null
     const cleanedData = {
       ...data,
       clientId: data.clientId === "" ? null : data.clientId,
       description: data.description === "" ? null : data.description,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
     };
     console.log("Sending task data:", cleanedData);
     createTaskMutation.mutate(cleanedData);
