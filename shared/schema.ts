@@ -53,6 +53,16 @@ export const tasks = pgTable("tasks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Client Status History table
+export const clientStatusHistory = pgTable("client_status_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
+  previousStatus: text("previous_status").$type<PipelineStatus | null>(),
+  newStatus: text("new_status").$type<PipelineStatus>().notNull(),
+  notes: text("notes"), // Optional notes about the status change
+  changedAt: timestamp("changed_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
@@ -71,6 +81,11 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
   updatedAt: true,
 });
 
+export const insertClientStatusHistorySchema = createInsertSchema(clientStatusHistory).omit({
+  id: true,
+  changedAt: true,
+});
+
 // Types
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Category = typeof categories.$inferSelect;
@@ -81,6 +96,9 @@ export type Client = typeof clients.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type Task = typeof tasks.$inferSelect;
 
+export type InsertClientStatusHistory = z.infer<typeof insertClientStatusHistorySchema>;
+export type ClientStatusHistory = typeof clientStatusHistory.$inferSelect;
+
 // Extended types for API responses
 export type ClientWithCategory = Client & {
   category?: Category;
@@ -88,4 +106,8 @@ export type ClientWithCategory = Client & {
 
 export type TaskWithClient = Task & {
   client?: Client;
+};
+
+export type ClientWithCategoryAndHistory = ClientWithCategory & {
+  statusHistory?: ClientStatusHistory[];
 };

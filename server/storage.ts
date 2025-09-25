@@ -1,7 +1,7 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, categories, clients, tasks } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, categories, clients, tasks, clientStatusHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Categories
@@ -28,6 +28,10 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: string, task: Partial<InsertTask>): Promise<Task | undefined>;
   deleteTask(id: string): Promise<boolean>;
+
+  // Client Status History
+  getClientStatusHistory(clientId: string): Promise<ClientStatusHistory[]>;
+  createStatusHistoryEntry(entry: InsertClientStatusHistory): Promise<ClientStatusHistory>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -168,6 +172,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateClient(id: string, update: Partial<InsertClient>): Promise<Client | undefined> {
+    // If status is being updated, get the current status first for history tracking
+    let previousStatus: string | null = null;
+    if (update.status) {
+      const currentClient = await db.select({ status: clients.status }).from(clients).where(eq(clients.id, id)).limit(1);
+      if (currentClient.length > 0) {
+        previousStatus = currentClient[0].status;
+      }
+    }
+
     const [client] = await db.update(clients)
       .set({
         ...(update.name && { name: update.name }),
@@ -183,6 +196,17 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(clients.id, id))
       .returning();
+
+    // Create status history entry if status was changed
+    if (client && update.status && update.status !== previousStatus) {
+      await this.createStatusHistoryEntry({
+        clientId: id,
+        previousStatus: previousStatus as any,
+        newStatus: update.status as any,
+        notes: `Estado cambiado de "${previousStatus || 'sin estado'}" a "${update.status}"`
+      });
+    }
+
     return client;
   }
 
@@ -314,6 +338,24 @@ export class DatabaseStorage implements IStorage {
   async deleteTask(id: string): Promise<boolean> {
     const result = await db.delete(tasks).where(eq(tasks.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Client Status History
+  async getClientStatusHistory(clientId: string): Promise<ClientStatusHistory[]> {
+    return await db.select()
+      .from(clientStatusHistory)
+      .where(eq(clientStatusHistory.clientId, clientId))
+      .orderBy(desc(clientStatusHistory.changedAt));
+  }
+
+  async createStatusHistoryEntry(entry: InsertClientStatusHistory): Promise<ClientStatusHistory> {
+    const [historyEntry] = await db.insert(clientStatusHistory).values({
+      clientId: entry.clientId,
+      previousStatus: (entry.previousStatus as any) || null,
+      newStatus: entry.newStatus as any,
+      notes: entry.notes || null,
+    }).returning();
+    return historyEntry;
   }
 }
 
