@@ -95,7 +95,12 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    createTaskMutation.mutate(data);
+    // Convert empty string to null for clientId
+    const cleanedData = {
+      ...data,
+      clientId: data.clientId === "" ? null : data.clientId,
+    };
+    createTaskMutation.mutate(cleanedData);
   };
 
   return (
