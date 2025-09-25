@@ -42,6 +42,8 @@ import { cn } from "@/lib/utils";
 
 const formSchema = insertTaskSchema.extend({
   title: z.string().min(1, "El título es requerido"),
+  description: z.string().optional().nullable(),
+  clientId: z.string().optional().nullable(),
 });
 
 interface NewTaskModalProps {
@@ -85,7 +87,8 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
       form.reset();
       onOpenChange(false);
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Error creating task:", error);
       toast({
         title: "Error",
         description: "No se pudo crear la tarea. Intenta de nuevo.",
@@ -95,11 +98,13 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    // Convert empty string to null for clientId
+    // Convert empty string to null for clientId and description
     const cleanedData = {
       ...data,
       clientId: data.clientId === "" ? null : data.clientId,
+      description: data.description === "" ? null : data.description,
     };
+    console.log("Sending task data:", cleanedData);
     createTaskMutation.mutate(cleanedData);
   };
 
