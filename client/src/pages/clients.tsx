@@ -66,6 +66,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function Clients() {
   const [showNewClient, setShowNewClient] = useState(false);
+  const [editingClient, setEditingClient] = useState<ClientWithCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -127,6 +128,17 @@ export default function Clients() {
   const handleDeleteClient = (id: string, name: string) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar el cliente "${name}"?`)) {
       deleteClientMutation.mutate(id);
+    }
+  };
+
+  const handleEditClient = (client: ClientWithCategory) => {
+    setEditingClient(client);
+  };
+
+  const handleCloseModal = (open: boolean) => {
+    if (!open) {
+      setShowNewClient(false);
+      setEditingClient(null);
     }
   };
 
@@ -318,7 +330,12 @@ export default function Clients() {
                             <Button variant="ghost" size="sm" data-testid={`button-view-client-${client.id}`}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" data-testid={`button-edit-client-${client.id}`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleEditClient(client)}
+                              data-testid={`button-edit-client-${client.id}`}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -394,8 +411,9 @@ export default function Clients() {
         </Card>
 
         <NewClientModal
-          open={showNewClient}
-          onOpenChange={setShowNewClient}
+          open={showNewClient || !!editingClient}
+          onOpenChange={handleCloseModal}
+          editingClient={editingClient}
         />
       </div>
     </MainLayout>

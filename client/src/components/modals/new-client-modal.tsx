@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -29,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertClientSchema, type Category } from "@shared/schema";
+import { insertClientSchema, type Category, type ClientWithCategory } from "@shared/schema";
 import { z } from "zod";
 
 const formSchema = insertClientSchema.extend({
@@ -41,24 +42,25 @@ const formSchema = insertClientSchema.extend({
 interface NewClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingClient?: ClientWithCategory | null;
 }
 
-export default function NewClientModal({ open, onOpenChange }: NewClientModalProps) {
+export default function NewClientModal({ open, onOpenChange, editingClient }: NewClientModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      company: "",
-      email: "",
-      phone: "",
-      whatsapp: "",
-      channel: "",
-      categoryId: "",
-      status: "nuevo",
-      notes: "",
+      name: editingClient?.name || "",
+      company: editingClient?.company || "",
+      email: editingClient?.email || "",
+      phone: editingClient?.phone || "",
+      whatsapp: editingClient?.whatsapp || "",
+      channel: editingClient?.channel || "",
+      categoryId: editingClient?.categoryId || "",
+      status: editingClient?.status || "nuevo",
+      notes: editingClient?.notes || "",
     },
   });
 
@@ -66,17 +68,48 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
     queryKey: ["/api/categories"],
   });
 
+  // Reset form when editingClient changes
+  useEffect(() => {
+    if (editingClient) {
+      form.reset({
+        name: editingClient.name,
+        company: editingClient.company || "",
+        email: editingClient.email,
+        phone: editingClient.phone,
+        whatsapp: editingClient.whatsapp || "",
+        channel: editingClient.channel || "",
+        categoryId: editingClient.categoryId || "",
+        status: editingClient.status,
+        notes: editingClient.notes || "",
+      });
+    } else {
+      form.reset({
+        name: "",
+        company: "",
+        email: "",
+        phone: "",
+        whatsapp: "",
+        channel: "",
+        categoryId: "",
+        status: "nuevo",
+        notes: "",
+      });
+    }
+  }, [editingClient, form]);
+
   const createClientMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("POST", "/api/clients", data);
+      const method = editingClient ? "PUT" : "POST";
+      const url = editingClient ? `/api/clients/${editingClient.id}` : "/api/clients";
+      const response = await apiRequest(method, url, data);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
-        title: "Cliente creado",
-        description: "El cliente ha sido creado exitosamente.",
+        title: editingClient ? "Cliente actualizado" : "Cliente creado",
+        description: editingClient ? "El cliente ha sido actualizado exitosamente." : "El cliente ha sido creado exitosamente.",
       });
       form.reset();
       onOpenChange(false);
@@ -84,7 +117,7 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
     onError: () => {
       toast({
         title: "Error",
-        description: "No se pudo crear el cliente. Intenta de nuevo.",
+        description: editingClient ? "No se pudo actualizar el cliente." : "No se pudo crear el cliente. Intenta de nuevo.",
         variant: "destructive",
       });
     },
@@ -98,11 +131,14 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuevo Cliente</DialogTitle>
+          <DialogTitle>{editingClient ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
+          <DialogDescription>
+            {editingClient ? "Modifica la información y estado del cliente existente." : "Completa los datos para registrar un nuevo cliente."}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid="form-new-client">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" data-testid={editingClient ? "form-edit-client" : "form-new-client"}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -166,7 +202,7 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Canal Preferido</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger data-testid="select-client-channel">
                           <SelectValue placeholder="Seleccionar canal" />
@@ -190,7 +226,7 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger data-testid="select-client-category">
                           <SelectValue placeholder="Seleccionar categoría" />
@@ -202,6 +238,31 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
                             {category.name}
                           </SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-client-status">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="nuevo">Nuevo</SelectItem>
+                        <SelectItem value="presupuesto-enviado">Presupuesto Enviado</SelectItem>
+                        <SelectItem value="presupuesto-pagado">Presupuesto Pagado</SelectItem>
+                        <SelectItem value="en-tareas">En Tareas</SelectItem>
+                        <SelectItem value="terminado">Terminado</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -259,7 +320,7 @@ export default function NewClientModal({ open, onOpenChange }: NewClientModalPro
                 disabled={createClientMutation.isPending}
                 data-testid="button-save-client"
               >
-                {createClientMutation.isPending ? "Guardando..." : "Guardar Cliente"}
+                {createClientMutation.isPending ? "Guardando..." : editingClient ? "Actualizar Cliente" : "Guardar Cliente"}
               </Button>
             </div>
           </form>
