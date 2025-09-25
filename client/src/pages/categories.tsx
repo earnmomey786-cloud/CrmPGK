@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import MainLayout from "@/components/layout/main-layout";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -35,6 +36,7 @@ import { z } from "zod";
 
 const formSchema = insertCategorySchema.extend({
   name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional(),
   color: z.string().min(1, "El color es requerido"),
 });
 
@@ -62,6 +64,7 @@ export default function Categories() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      description: "",
       color: predefinedColors[0],
     },
   });
@@ -148,6 +151,7 @@ export default function Categories() {
     setEditingCategory(category);
     form.reset({
       name: category.name,
+      description: category.description || "",
       color: category.color,
     });
   };
@@ -292,6 +296,26 @@ export default function Categories() {
                       <FormLabel>Nombre *</FormLabel>
                       <FormControl>
                         <Input placeholder="Ej: Autónomo, Impuestos, Informe" {...field} data-testid="input-category-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Descripción de la categoría..."
+                          rows={3}
+                          {...field}
+                          value={field.value || ""}
+                          data-testid="textarea-category-description"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -44,9 +44,9 @@ export class MemStorage implements IStorage {
 
   private initializeDefaultCategories() {
     const defaultCategories = [
-      { name: "Autónomo", color: "#3B82F6" },
-      { name: "Impuestos", color: "#EF4444" },
-      { name: "Informe", color: "#10B981" },
+      { name: "Autónomo", description: "Servicios para trabajadores autónomos y freelancers", color: "#3B82F6" },
+      { name: "Impuestos", description: "Gestión de declaraciones fiscales y tributación", color: "#EF4444" },
+      { name: "Informe", description: "Elaboración de informes contables y financieros", color: "#10B981" },
     ];
 
     defaultCategories.forEach(cat => {
@@ -54,6 +54,7 @@ export class MemStorage implements IStorage {
       const category: Category = {
         id,
         name: cat.name,
+        description: cat.description,
         color: cat.color,
         createdAt: new Date(),
       };
@@ -71,6 +72,7 @@ export class MemStorage implements IStorage {
     const category: Category = {
       id,
       name: insertCategory.name,
+      description: insertCategory.description || null,
       color: insertCategory.color || "#3B82F6",
       createdAt: new Date(),
     };

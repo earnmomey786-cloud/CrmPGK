@@ -19,6 +19,7 @@ export type TaskStatus = typeof taskStatus[number];
 export const categories = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
+  description: text("description"),
   color: text("color").notNull().default("#3B82F6"),
   createdAt: timestamp("created_at").defaultNow(),
 });
