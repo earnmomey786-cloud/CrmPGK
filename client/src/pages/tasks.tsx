@@ -71,9 +71,9 @@ const ITEMS_PER_PAGE = 10;
 export default function Tasks() {
   const [showNewTask, setShowNewTask] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("");
-  const [clientFilter, setClientFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [clientFilter, setClientFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   
   const { toast } = useToast();
@@ -115,9 +115,9 @@ export default function Tasks() {
         task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.client?.name.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesStatus = !statusFilter || task.status === statusFilter;
-      const matchesPriority = !priorityFilter || task.priority === priorityFilter;
-      const matchesClient = !clientFilter || task.clientId === clientFilter;
+      const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+      const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+      const matchesClient = clientFilter === "all" || task.clientId === clientFilter;
       
       return matchesSearch && matchesStatus && matchesPriority && matchesClient;
     });
@@ -187,6 +187,7 @@ export default function Tasks() {
                     <SelectValue placeholder="Todos los estados" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
                     <SelectItem value="pendiente">Pendiente</SelectItem>
                     <SelectItem value="en-progreso">En Progreso</SelectItem>
                     <SelectItem value="completada">Completada</SelectItem>
@@ -202,6 +203,7 @@ export default function Tasks() {
                     <SelectValue placeholder="Todas las prioridades" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todas las prioridades</SelectItem>
                     <SelectItem value="baja">Baja</SelectItem>
                     <SelectItem value="media">Media</SelectItem>
                     <SelectItem value="alta">Alta</SelectItem>
@@ -217,6 +219,7 @@ export default function Tasks() {
                     <SelectValue placeholder="Todos los clientes" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">Todos los clientes</SelectItem>
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}
