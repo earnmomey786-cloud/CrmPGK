@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import MainLayout from "@/components/layout/main-layout";
 import NewTaskModal from "@/components/modals/new-task-modal";
+import ViewTaskModal from "@/components/modals/view-task-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { TaskWithClient, ClientWithCategory } from "@shared/schema";
@@ -70,6 +71,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function Tasks() {
   const [showNewTask, setShowNewTask] = useState(false);
+  const [viewingTask, setViewingTask] = useState<TaskWithClient | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -329,7 +331,12 @@ export default function Tasks() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end space-x-2">
-                            <Button variant="ghost" size="sm" data-testid={`button-view-task-${task.id}`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setViewingTask(task)}
+                              data-testid={`button-view-task-${task.id}`}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="sm" data-testid={`button-edit-task-${task.id}`}>
@@ -410,6 +417,12 @@ export default function Tasks() {
         <NewTaskModal
           open={showNewTask}
           onOpenChange={setShowNewTask}
+        />
+
+        <ViewTaskModal
+          open={!!viewingTask}
+          onOpenChange={(open) => !open && setViewingTask(null)}
+          task={viewingTask}
         />
       </div>
     </MainLayout>

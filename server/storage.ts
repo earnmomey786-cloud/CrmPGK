@@ -221,13 +221,18 @@ export class DatabaseStorage implements IStorage {
       .select({
         task: tasks,
         client: clients,
+        category: categories,
       })
       .from(tasks)
-      .leftJoin(clients, eq(tasks.clientId, clients.id));
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id));
     
     return result.map(row => ({
       ...row.task,
-      client: row.client || undefined,
+      client: row.client ? {
+        ...row.client,
+        category: row.category || undefined,
+      } : undefined,
     }));
   }
 
@@ -236,16 +241,21 @@ export class DatabaseStorage implements IStorage {
       .select({
         task: tasks,
         client: clients,
+        category: categories,
       })
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
       .where(eq(tasks.id, id));
     
     if (!result) return undefined;
     
     return {
       ...result.task,
-      client: result.client || undefined,
+      client: result.client ? {
+        ...result.client,
+        category: result.category || undefined,
+      } : undefined,
     };
   }
 
@@ -254,14 +264,19 @@ export class DatabaseStorage implements IStorage {
       .select({
         task: tasks,
         client: clients,
+        category: categories,
       })
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
       .where(eq(tasks.clientId, clientId));
     
     return result.map(row => ({
       ...row.task,
-      client: row.client || undefined,
+      client: row.client ? {
+        ...row.client,
+        category: row.category || undefined,
+      } : undefined,
     }));
   }
 
@@ -270,14 +285,19 @@ export class DatabaseStorage implements IStorage {
       .select({
         task: tasks,
         client: clients,
+        category: categories,
       })
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
       .where(eq(tasks.status, status as any));
     
     return result.map(row => ({
       ...row.task,
-      client: row.client || undefined,
+      client: row.client ? {
+        ...row.client,
+        category: row.category || undefined,
+      } : undefined,
     }));
   }
 
@@ -286,14 +306,19 @@ export class DatabaseStorage implements IStorage {
       .select({
         task: tasks,
         client: clients,
+        category: categories,
       })
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
       .where(eq(tasks.status, "pendiente"));
     
     return result.map(row => ({
       ...row.task,
-      client: row.client || undefined,
+      client: row.client ? {
+        ...row.client,
+        category: row.category || undefined,
+      } : undefined,
     })).sort((a, b) => {
       // Sort by priority and due date
       const priorityOrder = { urgente: 4, alta: 3, media: 2, baja: 1 };

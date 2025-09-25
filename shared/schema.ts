@@ -105,7 +105,7 @@ export type ClientWithCategory = Client & {
 };
 
 export type TaskWithClient = Task & {
-  client?: Client;
+  client?: ClientWithCategory;
 };
 
 export type ClientWithCategoryAndHistory = ClientWithCategory & {
