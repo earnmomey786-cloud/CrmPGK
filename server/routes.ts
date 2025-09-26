@@ -316,15 +316,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get motivational phrase for current user - Protected
+  // Get global motivational phrase - Protected
   app.get("/api/motivational-phrase", requireAuth, async (req, res) => {
     try {
-      if (!req.user?.email) {
-        res.status(401).json({ message: "User not authenticated" });
-        return;
-      }
-      
-      const phrase = await storage.getMotivationalPhrase(req.user.email);
+      const phrase = await storage.getGlobalMotivationalPhrase();
       if (!phrase) {
         // Return default phrase if none exists
         res.json({ phrase: "¡Vamos por un día productivo! 💪" });
@@ -337,21 +332,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update motivational phrase for current user - Protected
+  // Update global motivational phrase - Protected
   app.put("/api/motivational-phrase", requireAuth, async (req, res) => {
     try {
-      if (!req.user?.email) {
-        res.status(401).json({ message: "User not authenticated" });
-        return;
-      }
-      
       const { phrase } = req.body;
       if (!phrase || typeof phrase !== 'string') {
         res.status(400).json({ message: "Phrase is required and must be a string" });
         return;
       }
       
-      const updatedPhrase = await storage.updateMotivationalPhrase(req.user.email, phrase);
+      const updatedPhrase = await storage.updateGlobalMotivationalPhrase(phrase);
       res.json({ phrase: updatedPhrase?.phrase });
     } catch (error) {
       res.status(500).json({ message: "Error updating motivational phrase" });

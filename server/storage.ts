@@ -1,4 +1,4 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, type MotivationalPhrase, type InsertMotivationalPhrase, categories, clients, tasks, clientStatusHistory, users, motivationalPhrases, getUserDisplayName } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, type GlobalMotivationalPhrase, type InsertGlobalMotivationalPhrase, categories, clients, tasks, clientStatusHistory, users, globalMotivationalPhrase, getUserDisplayName } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq, sql, desc, and } from "drizzle-orm";
@@ -46,9 +46,9 @@ export interface IStorage {
   getClientStatusHistory(clientId: string): Promise<ClientStatusHistory[]>;
   createStatusHistoryEntry(entry: InsertClientStatusHistory): Promise<ClientStatusHistory>;
 
-  // Motivational Phrases
-  getMotivationalPhrase(userEmail: string): Promise<MotivationalPhrase | undefined>;
-  updateMotivationalPhrase(userEmail: string, phrase: string): Promise<MotivationalPhrase | undefined>;
+  // Global Motivational Phrase
+  getGlobalMotivationalPhrase(): Promise<GlobalMotivationalPhrase | undefined>;
+  updateGlobalMotivationalPhrase(phrase: string): Promise<GlobalMotivationalPhrase | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -510,38 +510,37 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Motivational Phrases methods
-  async getMotivationalPhrase(userEmail: string): Promise<MotivationalPhrase | undefined> {
+  // Global Motivational Phrase methods
+  async getGlobalMotivationalPhrase(): Promise<GlobalMotivationalPhrase | undefined> {
     const [phrase] = await db
       .select()
-      .from(motivationalPhrases)
-      .where(eq(motivationalPhrases.userEmail, userEmail));
+      .from(globalMotivationalPhrase)
+      .limit(1);
     return phrase;
   }
 
-  async updateMotivationalPhrase(userEmail: string, phrase: string): Promise<MotivationalPhrase | undefined> {
+  async updateGlobalMotivationalPhrase(phrase: string): Promise<GlobalMotivationalPhrase | undefined> {
     const [existingPhrase] = await db
       .select()
-      .from(motivationalPhrases)
-      .where(eq(motivationalPhrases.userEmail, userEmail));
+      .from(globalMotivationalPhrase)
+      .limit(1);
 
     if (existingPhrase) {
       // Update existing phrase
       const [updated] = await db
-        .update(motivationalPhrases)
+        .update(globalMotivationalPhrase)
         .set({ 
           phrase: phrase, 
           updatedAt: new Date() 
         })
-        .where(eq(motivationalPhrases.userEmail, userEmail))
+        .where(eq(globalMotivationalPhrase.id, existingPhrase.id))
         .returning();
       return updated;
     } else {
       // Create new phrase
       const [newPhrase] = await db
-        .insert(motivationalPhrases)
+        .insert(globalMotivationalPhrase)
         .values({
-          userEmail: userEmail,
           phrase: phrase,
         })
         .returning();
