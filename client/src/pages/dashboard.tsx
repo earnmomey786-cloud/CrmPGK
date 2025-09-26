@@ -280,7 +280,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right">
                         <Badge 
-                          className={statusColors[client.status as keyof typeof statusColors]}
+                          className={`${statusColors[client.status as keyof typeof statusColors]} max-w-24 sm:max-w-none truncate`}
                           data-testid={`client-status-${client.id}`}
                         >
                           {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
