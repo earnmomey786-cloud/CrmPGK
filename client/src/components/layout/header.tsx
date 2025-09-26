@@ -58,9 +58,7 @@ export default function Header({ title, onSearch, onMenuClick, isMobile }: Heade
           <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
         
-        <div className="hidden sm:flex">
-          <NotificationDropdown notificationCount={notificationCount} />
-        </div>
+        <NotificationDropdown notificationCount={notificationCount} />
         
         <Button variant="ghost" size="icon" className="hidden sm:flex" data-testid="button-settings">
           <Settings className="h-4 w-4" />
