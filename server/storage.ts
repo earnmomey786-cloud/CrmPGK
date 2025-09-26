@@ -1,9 +1,20 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, categories, clients, tasks, clientStatusHistory } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, categories, clients, tasks, clientStatusHistory, users } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
+  // Authentication
+  sessionStore: session.Store;
+  getUser(id: number): Promise<User | null>;
+  getUserByUsername(username: string): Promise<User | null>;
+  getUserByEmail(email: string): Promise<User | null>;
+  createUser(user: InsertUser): Promise<User>;
+  
   // Categories
   getCategories(): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
@@ -35,9 +46,19 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
   constructor() {
-    // Initialize with default categories on first run
+    // Initialize session store with the database connection
+    const connectionString = process.env.DATABASE_URL!;
+    this.sessionStore = new PostgresSessionStore({ 
+      conString: connectionString,
+      createTableIfMissing: true 
+    });
+    
+    // Initialize with default categories and users on first run
     this.initializeDefaultCategories();
+    this.initializeDefaultUsers();
   }
 
   private async initializeDefaultCategories() {
@@ -56,6 +77,36 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       // Ignore errors - table might not exist yet
       console.log("Default categories initialization skipped:", (error as Error).message);
+    }
+  }
+
+  private async initializeDefaultUsers() {
+    try {
+      // Check if users already exist
+      const existingUsers = await db.select().from(users).limit(1);
+      if (existingUsers.length > 0) return; // Already initialized
+      
+      // Import here to avoid circular dependency
+      const { hashPassword } = await import("./auth");
+      
+      const defaultUsers = [
+        { 
+          username: "info@bizneswhiszpanii.com",
+          email: "info@bizneswhiszpanii.com", 
+          password: await hashPassword("Kocham647")
+        },
+        { 
+          username: "admin@pgkhiszpania.com",
+          email: "admin@pgkhiszpania.com", 
+          password: await hashPassword("Kocham647")
+        },
+      ];
+
+      await db.insert(users).values(defaultUsers);
+      console.log("Default users created successfully");
+    } catch (error) {
+      // Ignore errors - table might not exist yet
+      console.log("Default users initialization skipped:", (error as Error).message);
     }
   }
 
@@ -381,6 +432,31 @@ export class DatabaseStorage implements IStorage {
       notes: entry.notes || null,
     }).returning();
     return historyEntry;
+  }
+
+  // Authentication methods
+  async getUser(id: number): Promise<User | null> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || null;
+  }
+
+  async getUserByUsername(username: string): Promise<User | null> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || null;
+  }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || null;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values({
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email,
+    }).returning();
+    return user;
   }
 }
 

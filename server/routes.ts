@@ -3,10 +3,11 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClientSchema, insertTaskSchema, insertCategorySchema, insertClientStatusHistorySchema } from "@shared/schema";
 import { z } from "zod";
+import { requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Categories routes
-  app.get("/api/categories", async (req, res) => {
+  // Categories routes - Protected
+  app.get("/api/categories", requireAuth, async (req, res) => {
     try {
       const categories = await storage.getCategories();
       res.json(categories);
@@ -15,7 +16,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/categories", async (req, res) => {
+  app.post("/api/categories", requireAuth, async (req, res) => {
     try {
       const validatedData = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(validatedData);
@@ -29,7 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/categories/:id", async (req, res) => {
+  app.put("/api/categories/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertCategorySchema.partial().parse(req.body);
@@ -50,7 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/categories/:id", async (req, res) => {
+  app.delete("/api/categories/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteCategory(id);
@@ -66,8 +67,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clients routes
-  app.get("/api/clients", async (req, res) => {
+  // Clients routes - Protected
+  app.get("/api/clients", requireAuth, async (req, res) => {
     try {
       const { status, category } = req.query;
       
@@ -86,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/clients/:id", async (req, res) => {
+  app.get("/api/clients/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const client = await storage.getClient(id);
@@ -102,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/clients", async (req, res) => {
+  app.post("/api/clients", requireAuth, async (req, res) => {
     try {
       const validatedData = insertClientSchema.parse(req.body);
       const client = await storage.createClient(validatedData);
@@ -116,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/clients/:id", async (req, res) => {
+  app.put("/api/clients/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertClientSchema.partial().parse(req.body);
@@ -137,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/clients/:id", async (req, res) => {
+  app.delete("/api/clients/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteClient(id);
@@ -154,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Client Status History routes
-  app.get("/api/clients/:id/history", async (req, res) => {
+  app.get("/api/clients/:id/history", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const history = await storage.getClientStatusHistory(id);
@@ -164,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/clients/:id/history", async (req, res) => {
+  app.post("/api/clients/:id/history", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertClientStatusHistorySchema.parse({
@@ -182,8 +183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Tasks routes
-  app.get("/api/tasks", async (req, res) => {
+  // Tasks routes - Protected
+  app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
       const { client, status, pending } = req.query;
       
@@ -204,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/tasks/:id", async (req, res) => {
+  app.get("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const task = await storage.getTask(id);
@@ -220,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
       // Convert dueDate string to Date if present
       const processedBody = {
@@ -240,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/tasks/:id", async (req, res) => {
+  app.put("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -268,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/tasks/:id", async (req, res) => {
+  app.delete("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteTask(id);
@@ -284,8 +285,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stats endpoint for dashboard
-  app.get("/api/stats", async (req, res) => {
+  // Stats endpoint for dashboard - Protected
+  app.get("/api/stats", requireAuth, async (req, res) => {
     try {
       const clients = await storage.getClients();
       const tasks = await storage.getTasks();

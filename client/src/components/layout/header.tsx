@@ -1,6 +1,7 @@
-import { Search, Bell, Settings, Menu } from "lucide-react";
+import { Search, Bell, Settings, Menu, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 interface HeaderProps {
   title: string;
@@ -10,6 +11,7 @@ interface HeaderProps {
 }
 
 export default function Header({ title, onSearch, onMenuClick, isMobile }: HeaderProps) {
+  const { logout, user } = useAuth();
   return (
     <header className="h-16 bg-card border-b border-border px-3 sm:px-6 flex items-center justify-between">
       <div className="flex items-center space-x-2 sm:space-x-4">
@@ -53,6 +55,21 @@ export default function Header({ title, onSearch, onMenuClick, isMobile }: Heade
         <Button variant="ghost" size="icon" className="hidden sm:flex" data-testid="button-settings">
           <Settings className="h-4 w-4" />
         </Button>
+        
+        {user && (
+          <div className="hidden sm:flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={logout}
+              title="Cerrar sesión"
+              data-testid="button-logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   );
