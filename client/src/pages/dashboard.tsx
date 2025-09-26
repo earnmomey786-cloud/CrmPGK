@@ -94,7 +94,7 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-3 sm:p-6">
+      <div className="p-2 sm:p-3 lg:p-6">
         {/* Action Buttons Section */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Button

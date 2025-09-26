@@ -155,7 +155,7 @@ export default function Tasks() {
 
   return (
     <MainLayout title="Gestión de Tareas" onSearch={setSearchQuery}>
-      <div className="p-6">
+      <div className="p-2 sm:p-3 lg:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground">Gestión de Tareas</h2>
           <Button 
