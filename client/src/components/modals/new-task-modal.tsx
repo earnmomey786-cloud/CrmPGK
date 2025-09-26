@@ -37,7 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertTaskSchema, type ClientWithCategory, type TaskWithClient } from "@shared/schema";
+import { insertTaskSchema, type ClientWithCategory, type TaskWithClient, getAllUsers } from "@shared/schema";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +45,7 @@ const formSchema = insertTaskSchema.extend({
   title: z.string().min(1, "El título es requerido"),
   description: z.string().optional().nullable(),
   clientId: z.string().optional().nullable(),
+  assignedTo: z.string().optional().nullable(),
 });
 
 interface NewTaskModalProps {
@@ -64,6 +65,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
       title: editingTask?.title || "",
       description: editingTask?.description || "",
       clientId: editingTask?.clientId || selectedClientId || "",
+      assignedTo: editingTask?.assignedTo || "",
       priority: editingTask?.priority || "media",
       status: editingTask?.status || "pendiente",
       dueDate: editingTask?.dueDate ? new Date(editingTask.dueDate) : undefined,
@@ -77,6 +79,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         title: editingTask.title,
         description: editingTask.description || "",
         clientId: editingTask.clientId || "",
+        assignedTo: editingTask.assignedTo || "",
         priority: editingTask.priority,
         status: editingTask.status,
         dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
@@ -86,6 +89,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         title: "",
         description: "",
         clientId: selectedClientId || "",
+        assignedTo: "",
         priority: "media",
         status: "pendiente",
         dueDate: undefined,
@@ -96,6 +100,9 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
   const { data: clients = [] } = useQuery<ClientWithCategory[]>({
     queryKey: ["/api/clients"],
   });
+
+  // Get available users for assignment
+  const availableUsers = getAllUsers();
 
   const saveTaskMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
@@ -137,6 +144,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
     const cleanedData = {
       ...data,
       clientId: data.clientId === "" ? null : data.clientId,
+      assignedTo: data.assignedTo === "" ? null : data.assignedTo,
       description: data.description === "" ? null : data.description,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
     };
@@ -211,6 +219,32 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
                         {clients.map((client) => (
                           <SelectItem key={client.id} value={client.id}>
                             {client.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Asignado a</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-task-assigned-to">
+                          <SelectValue placeholder="Seleccionar usuario" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Sin asignar</SelectItem>
+                        {availableUsers.map((user) => (
+                          <SelectItem key={user.email} value={user.email}>
+                            {user.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
