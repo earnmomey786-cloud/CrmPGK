@@ -66,7 +66,7 @@ export default function LoginPage() {
             Iniciar Sesión
           </CardTitle>
           <CardDescription className="text-center">
-            Sistema CRM - Acceso autorizado únicamente
+            CRM PGK - Acceso autorizado únicamente
           </CardDescription>
         </CardHeader>
         <CardContent>

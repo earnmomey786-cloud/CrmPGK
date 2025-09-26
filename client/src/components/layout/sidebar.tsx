@@ -46,7 +46,7 @@ export default function Sidebar({ isOpen = false, onClose, isMobile = false }: S
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-card-foreground">CRM Pro</h1>
+            <h1 className="text-xl font-bold text-card-foreground">CRM PGK</h1>
           </div>
           {isMobile && (
             <Button

@@ -1,6 +1,6 @@
 # Overview
 
-This is a Customer Relationship Management (CRM) system built as a full-stack web application. The application manages clients, tasks, and categories with a sales pipeline workflow. It provides a complete business management solution for tracking client relationships, managing tasks, and organizing work by categories. The system features a modern React frontend with a comprehensive UI component library and an Express.js backend with PostgreSQL database integration.
+This is a Customer Relationship Management (CRM) system called "CRM PGK" built as a full-stack web application. The application manages clients, tasks, and categories with a sales pipeline workflow. It provides a complete business management solution for tracking client relationships, managing tasks, and organizing work by categories. The system features a modern React frontend with a comprehensive UI component library and an Express.js backend with PostgreSQL database integration.
 
 # User Preferences
 
