@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import MainLayout from "@/components/layout/main-layout";
 import NewClientModal from "@/components/modals/new-client-modal";
 import NewTaskModal from "@/components/modals/new-task-modal";
+import ViewClientModal from "@/components/modals/view-client-modal";
+import ViewTaskModal from "@/components/modals/view-task-modal";
 import { Link } from "wouter";
 import type { DashboardStats } from "@/lib/types";
 import type { ClientWithCategory, TaskWithClient } from "@shared/schema";
@@ -47,6 +49,8 @@ const statusColors = {
 export default function Dashboard() {
   const [showNewClient, setShowNewClient] = useState(false);
   const [showNewTask, setShowNewTask] = useState(false);
+  const [viewingClient, setViewingClient] = useState<ClientWithCategory | null>(null);
+  const [viewingTask, setViewingTask] = useState<TaskWithClient | null>(null);
 
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/stats"],
@@ -259,7 +263,12 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   {recentClients.map((client) => (
-                    <div key={client.id} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border" data-testid={`client-card-${client.id}`}>
+                    <div 
+                      key={client.id} 
+                      className="flex items-center justify-between p-3 bg-background rounded-lg border border-border hover:bg-accent cursor-pointer transition-colors" 
+                      data-testid={`client-card-${client.id}`}
+                      onClick={() => setViewingClient(client)}
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
                           <User className="h-4 w-4 text-muted-foreground" />
@@ -330,7 +339,12 @@ export default function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   {pendingTasks.map((task) => (
-                    <div key={task.id} className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border" data-testid={`task-card-${task.id}`}>
+                    <div 
+                      key={task.id} 
+                      className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border hover:bg-accent cursor-pointer transition-colors" 
+                      data-testid={`task-card-${task.id}`}
+                      onClick={() => setViewingTask(task)}
+                    >
                       <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                         task.priority === 'urgente' ? 'bg-destructive' :
                         task.priority === 'alta' ? 'bg-chart-4' :
@@ -372,6 +386,18 @@ export default function Dashboard() {
         <NewTaskModal
           open={showNewTask}
           onOpenChange={setShowNewTask}
+        />
+
+        <ViewClientModal
+          open={!!viewingClient}
+          onOpenChange={(open) => !open && setViewingClient(null)}
+          client={viewingClient}
+        />
+
+        <ViewTaskModal
+          open={!!viewingTask}
+          onOpenChange={(open) => !open && setViewingTask(null)}
+          task={viewingTask}
         />
       </div>
     </MainLayout>
