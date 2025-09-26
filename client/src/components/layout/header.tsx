@@ -1,9 +1,10 @@
-import { Search, Bell, Settings, Menu, LogOut } from "lucide-react";
+import { Search, Settings, Menu, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { getUserDisplayName } from "@shared/schema";
+import NotificationDropdown from "./notification-dropdown";
 
 interface HeaderProps {
   title: string;
@@ -57,14 +58,9 @@ export default function Header({ title, onSearch, onMenuClick, isMobile }: Heade
           <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
         
-        <Button variant="ghost" size="icon" className="relative hidden sm:flex" data-testid="button-notifications">
-          <Bell className="h-4 w-4" />
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center px-1" data-testid="notification-count">
-              {notificationCount > 99 ? '99+' : notificationCount}
-            </span>
-          )}
-        </Button>
+        <div className="hidden sm:flex">
+          <NotificationDropdown notificationCount={notificationCount} />
+        </div>
         
         <Button variant="ghost" size="icon" className="hidden sm:flex" data-testid="button-settings">
           <Settings className="h-4 w-4" />

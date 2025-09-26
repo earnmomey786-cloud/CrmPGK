@@ -300,6 +300,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pending tasks for current user - Protected
+  app.get("/api/notifications/tasks", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.email) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+      
+      const pendingTasks = await storage.getTasksByAssignedUser(req.user.email);
+      const onlyPending = pendingTasks.filter(task => task.status === "pendiente");
+      res.json(onlyPending);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching pending tasks" });
+    }
+  });
+
+  // Get motivational phrase for current user - Protected
+  app.get("/api/motivational-phrase", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.email) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+      
+      const phrase = await storage.getMotivationalPhrase(req.user.email);
+      if (!phrase) {
+        // Return default phrase if none exists
+        res.json({ phrase: "¡Vamos por un día productivo! 💪" });
+        return;
+      }
+      
+      res.json({ phrase: phrase.phrase });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching motivational phrase" });
+    }
+  });
+
+  // Update motivational phrase for current user - Protected
+  app.put("/api/motivational-phrase", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.email) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+      
+      const { phrase } = req.body;
+      if (!phrase || typeof phrase !== 'string') {
+        res.status(400).json({ message: "Phrase is required and must be a string" });
+        return;
+      }
+      
+      const updatedPhrase = await storage.updateMotivationalPhrase(req.user.email, phrase);
+      res.json({ phrase: updatedPhrase?.phrase });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating motivational phrase" });
+    }
+  });
+
   // Stats endpoint for dashboard - Protected
   app.get("/api/stats", requireAuth, async (req, res) => {
     try {
