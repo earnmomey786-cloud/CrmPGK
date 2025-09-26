@@ -285,6 +285,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User notifications endpoint - Protected
+  app.get("/api/notifications/count", requireAuth, async (req, res) => {
+    try {
+      if (!req.user?.email) {
+        res.status(401).json({ message: "User not authenticated" });
+        return;
+      }
+      
+      const pendingCount = await storage.getPendingTasksCount(req.user.email);
+      res.json({ count: pendingCount });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching notification count" });
+    }
+  });
+
   // Stats endpoint for dashboard - Protected
   app.get("/api/stats", requireAuth, async (req, res) => {
     try {

@@ -130,6 +130,30 @@ export default function ViewTaskModal({ open, onOpenChange, task }: ViewTaskModa
 
           <Separator />
 
+          {/* Assigned User */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Asignado a:</span>
+            </div>
+            {task.assignedUserName ? (
+              <div className="ml-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                    <User className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="font-medium text-primary" data-testid="task-assigned-user">
+                    {task.assignedUserName}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="ml-6 text-sm text-muted-foreground">Sin asignar</div>
+            )}
+          </div>
+
+          <Separator />
+
           {/* Due Date */}
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />

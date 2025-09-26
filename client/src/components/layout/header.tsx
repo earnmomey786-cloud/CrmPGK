@@ -2,6 +2,8 @@ import { Search, Bell, Settings, Menu, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { getUserDisplayName } from "@shared/schema";
 
 interface HeaderProps {
   title: string;
@@ -12,6 +14,16 @@ interface HeaderProps {
 
 export default function Header({ title, onSearch, onMenuClick, isMobile }: HeaderProps) {
   const { logout, user } = useAuth();
+  
+  // Query for pending tasks count
+  const { data: notificationData } = useQuery<{ count: number }>({
+    queryKey: ['/api/notifications/count'],
+    enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+  
+  const notificationCount = notificationData?.count || 0;
+  const userDisplayName = user ? getUserDisplayName(user.email) : null;
   return (
     <header className="h-16 bg-card border-b border-border px-3 sm:px-6 flex items-center justify-between">
       <div className="flex items-center space-x-2 sm:space-x-4">
@@ -47,9 +59,11 @@ export default function Header({ title, onSearch, onMenuClick, isMobile }: Heade
         
         <Button variant="ghost" size="icon" className="relative hidden sm:flex" data-testid="button-notifications">
           <Bell className="h-4 w-4" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-            3
-          </span>
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center px-1" data-testid="notification-count">
+              {notificationCount > 99 ? '99+' : notificationCount}
+            </span>
+          )}
         </Button>
         
         <Button variant="ghost" size="icon" className="hidden sm:flex" data-testid="button-settings">
@@ -58,7 +72,7 @@ export default function Header({ title, onSearch, onMenuClick, isMobile }: Heade
         
         {user && (
           <div className="hidden sm:flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <span className="text-sm text-muted-foreground" data-testid="user-display-name">{userDisplayName || user.email}</span>
             <Button 
               variant="ghost" 
               size="icon" 

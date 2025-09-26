@@ -65,7 +65,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
       title: editingTask?.title || "",
       description: editingTask?.description || "",
       clientId: editingTask?.clientId || selectedClientId || "",
-      assignedTo: editingTask?.assignedTo || "",
+      assignedTo: editingTask?.assignedTo || "unassigned",
       priority: editingTask?.priority || "media",
       status: editingTask?.status || "pendiente",
       dueDate: editingTask?.dueDate ? new Date(editingTask.dueDate) : undefined,
@@ -79,7 +79,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         title: editingTask.title,
         description: editingTask.description || "",
         clientId: editingTask.clientId || "",
-        assignedTo: editingTask.assignedTo || "",
+        assignedTo: editingTask.assignedTo || "unassigned",
         priority: editingTask.priority,
         status: editingTask.status,
         dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
@@ -89,7 +89,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         title: "",
         description: "",
         clientId: selectedClientId || "",
-        assignedTo: "",
+        assignedTo: "unassigned",
         priority: "media",
         status: "pendiente",
         dueDate: undefined,
@@ -117,6 +117,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/count"] });
       toast({
         title: editingTask ? "Tarea actualizada" : "Tarea creada",
         description: editingTask 
@@ -144,7 +145,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
     const cleanedData = {
       ...data,
       clientId: data.clientId === "" ? null : data.clientId,
-      assignedTo: data.assignedTo === "" ? null : data.assignedTo,
+      assignedTo: data.assignedTo === "" || data.assignedTo === "unassigned" ? null : data.assignedTo,
       description: data.description === "" ? null : data.description,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
     };
@@ -241,7 +242,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Sin asignar</SelectItem>
+                        <SelectItem value="unassigned">Sin asignar</SelectItem>
                         {availableUsers.map((user) => (
                           <SelectItem key={user.email} value={user.email}>
                             {user.name}

@@ -100,6 +100,7 @@ export default function Tasks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/count"] });
       toast({
         title: "Tarea eliminada",
         description: "La tarea ha sido eliminada exitosamente.",
@@ -291,6 +292,12 @@ export default function Tasks() {
                             <span className="text-sm text-foreground">{task.client.name}</span>
                           </div>
                         )}
+                        {task.assignedUserName && (
+                          <div className="flex items-center space-x-2 mb-2">
+                            <User className="h-4 w-4 text-primary" />
+                            <span className="text-sm text-primary font-medium">Asignado a: {task.assignedUserName}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center space-x-1 ml-2">
                         <Button 
@@ -358,6 +365,7 @@ export default function Tasks() {
                     <TableRow>
                       <TableHead>Tarea</TableHead>
                       <TableHead className="hidden md:table-cell">Cliente</TableHead>
+                      <TableHead className="hidden lg:table-cell">Asignado a</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="hidden lg:table-cell">Prioridad</TableHead>
                       <TableHead className="hidden lg:table-cell">Fecha Límite</TableHead>
@@ -394,6 +402,18 @@ export default function Tasks() {
                                 <div className="text-sm text-foreground">{task.client.name}</div>
                                 <div className="text-xs text-muted-foreground">{task.client.email}</div>
                               </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Sin cliente</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {task.assignedUserName ? (
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                                <User className="h-3 w-3 text-primary" />
+                              </div>
+                              <span className="text-sm text-foreground">{task.assignedUserName}</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">Sin asignar</span>
