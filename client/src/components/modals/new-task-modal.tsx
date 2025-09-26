@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -115,6 +116,9 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nueva Tarea</DialogTitle>
+          <DialogDescription>
+            Crea una nueva tarea para gestionar el trabajo de tu equipo.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
