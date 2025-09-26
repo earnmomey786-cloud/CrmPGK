@@ -14,7 +14,7 @@ export default function MainLayout({ children, title, onSearch }: MainLayoutProp
       <Sidebar />
       <div className="flex-1 overflow-hidden">
         <Header title={title} onSearch={onSearch} />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto h-full">
           {children}
         </main>
       </div>

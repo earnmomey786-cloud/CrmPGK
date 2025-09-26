@@ -259,7 +259,7 @@ export default function Tasks() {
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-auto max-h-[60vh]">
                 <Table>
                   <TableHeader>
                     <TableRow>
