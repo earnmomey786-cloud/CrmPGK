@@ -1,7 +1,7 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, categories, clients, tasks, clientStatusHistory, users } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, categories, clients, tasks, clientStatusHistory, users, getUserDisplayName } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -35,7 +35,9 @@ export interface IStorage {
   getTask(id: string): Promise<TaskWithClient | undefined>;
   getTasksByClient(clientId: string): Promise<TaskWithClient[]>;
   getTasksByStatus(status: string): Promise<TaskWithClient[]>;
+  getTasksByAssignedUser(email: string): Promise<TaskWithClient[]>;
   getPendingTasks(): Promise<TaskWithClient[]>;
+  getPendingTasksCount(email: string): Promise<number>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: string, task: Partial<InsertTask>): Promise<Task | undefined>;
   deleteTask(id: string): Promise<boolean>;
@@ -288,6 +290,7 @@ export class DatabaseStorage implements IStorage {
         ...row.client,
         category: row.category || undefined,
       } : undefined,
+      assignedUserName: row.task.assignedTo ? getUserDisplayName(row.task.assignedTo) : undefined,
     }));
   }
 
@@ -311,6 +314,7 @@ export class DatabaseStorage implements IStorage {
         ...result.client,
         category: result.category || undefined,
       } : undefined,
+      assignedUserName: result.task.assignedTo ? getUserDisplayName(result.task.assignedTo) : undefined,
     };
   }
 
@@ -333,6 +337,7 @@ export class DatabaseStorage implements IStorage {
         ...row.client,
         category: row.category || undefined,
       } : undefined,
+      assignedUserName: row.task.assignedTo ? getUserDisplayName(row.task.assignedTo) : undefined,
     }));
   }
 
@@ -355,6 +360,7 @@ export class DatabaseStorage implements IStorage {
         ...row.client,
         category: row.category || undefined,
       } : undefined,
+      assignedUserName: row.task.assignedTo ? getUserDisplayName(row.task.assignedTo) : undefined,
     }));
   }
 
@@ -376,6 +382,7 @@ export class DatabaseStorage implements IStorage {
         ...row.client,
         category: row.category || undefined,
       } : undefined,
+      assignedUserName: row.task.assignedTo ? getUserDisplayName(row.task.assignedTo) : undefined,
     })).sort((a, b) => {
       // Sort by priority and due date
       const priorityOrder = { urgente: 4, alta: 3, media: 2, baja: 1 };
@@ -394,11 +401,44 @@ export class DatabaseStorage implements IStorage {
       title: insertTask.title,
       description: insertTask.description || null,
       clientId: insertTask.clientId || null,
+      assignedTo: insertTask.assignedTo || null,
       priority: (insertTask.priority as any) || "media",
       status: (insertTask.status as any) || "pendiente",
       dueDate: insertTask.dueDate || null,
     }).returning();
     return task;
+  }
+
+  async getTasksByAssignedUser(email: string): Promise<TaskWithClient[]> {
+    const result = await db
+      .select({
+        task: tasks,
+        client: clients,
+        category: categories,
+      })
+      .from(tasks)
+      .leftJoin(clients, eq(tasks.clientId, clients.id))
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .where(eq(tasks.assignedTo, email))
+      .orderBy(desc(tasks.createdAt));
+    
+    return result.map(row => ({
+      ...row.task,
+      client: row.client ? {
+        ...row.client,
+        category: row.category || undefined,
+      } : undefined,
+      assignedUserName: row.task.assignedTo ? getUserDisplayName(row.task.assignedTo) : undefined,
+    }));
+  }
+
+  async getPendingTasksCount(email: string): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(tasks)
+      .where(and(eq(tasks.assignedTo, email), eq(tasks.status, "pendiente" as any)));
+    
+    return result?.count ?? 0;
   }
 
   async updateTask(id: string, update: Partial<InsertTask>): Promise<Task | undefined> {
@@ -407,6 +447,7 @@ export class DatabaseStorage implements IStorage {
         ...(update.title && { title: update.title }),
         ...(update.description !== undefined && { description: update.description }),
         ...(update.clientId !== undefined && { clientId: update.clientId }),
+        ...(update.assignedTo !== undefined && { assignedTo: update.assignedTo }),
         ...(update.priority && { priority: update.priority as any }),
         ...(update.status && { status: update.status as any }),
         ...(update.dueDate !== undefined && { dueDate: update.dueDate }),

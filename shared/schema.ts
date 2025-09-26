@@ -46,6 +46,7 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   clientId: varchar("client_id").references(() => clients.id),
+  assignedTo: text("assigned_to").references(() => users.email), // Reference by email for easier lookup
   priority: text("priority").$type<TaskPriority>().notNull().default("media"),
   status: text("status").$type<TaskStatus>().notNull().default("pendiente"),
   dueDate: timestamp("due_date"),
@@ -106,6 +107,7 @@ export type ClientWithCategory = Client & {
 
 export type TaskWithClient = Task & {
   client?: ClientWithCategory;
+  assignedUserName?: string; // Display name of assigned user
 };
 
 export type ClientWithCategoryAndHistory = ClientWithCategory & {
@@ -130,3 +132,18 @@ export const insertUserSchema = createInsertSchema(users).omit({
 // User types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// User mapping for display names
+export const userNames: Record<string, string> = {
+  "info@bizneswhiszpanii.com": "Natalia",
+  "admin@pgkhiszpania.com": "Kenyi",
+};
+
+// Helper functions for user management
+export const getUserDisplayName = (email: string): string => {
+  return userNames[email] || email;
+};
+
+export const getAllUsers = (): Array<{ email: string; name: string }> => {
+  return Object.entries(userNames).map(([email, name]) => ({ email, name }));
+};
