@@ -79,16 +79,26 @@ export function setupAuth(app: Express) {
     res.status(403).json({ message: "Registration is not available. Contact administrator for access." });
   });
 
-  app.post("/api/login", passport.authenticate("local", { failureMessage: true }), (req, res, next) => {
-    // Regenerate session on successful login to prevent session fixation
-    req.session.regenerate((err) => {
-      if (err) return next(err);
-      req.login(req.user!, (err) => {
-        if (err) return next(err);
-        const user = req.user!;
-        res.status(200).json({ id: user.id, username: user.username, email: user.email });
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        return res.status(500).json({ message: "Error interno del servidor" });
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "Usuario o contraseña incorrectos" });
+      }
+      
+      // Regenerate session on successful login to prevent session fixation
+      req.session.regenerate((err) => {
+        if (err) return res.status(500).json({ message: "Error de sesión" });
+        
+        req.login(user, (err) => {
+          if (err) return res.status(500).json({ message: "Error de login" });
+          res.status(200).json({ id: user.id, username: user.username, email: user.email });
+        });
       });
-    });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
