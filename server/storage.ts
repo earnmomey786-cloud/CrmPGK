@@ -149,7 +149,8 @@ export class DatabaseStorage implements IStorage {
         category: categories,
       })
       .from(clients)
-      .leftJoin(categories, eq(clients.categoryId, categories.id));
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .orderBy(desc(clients.createdAt));
     
     return result.map(row => ({
       ...row.client,
@@ -183,7 +184,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(clients)
       .leftJoin(categories, eq(clients.categoryId, categories.id))
-      .where(eq(clients.status, status as any));
+      .where(eq(clients.status, status as any))
+      .orderBy(desc(clients.createdAt));
     
     return result.map(row => ({
       ...row.client,
@@ -199,7 +201,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(clients)
       .leftJoin(categories, eq(clients.categoryId, categories.id))
-      .where(eq(clients.categoryId, categoryId));
+      .where(eq(clients.categoryId, categoryId))
+      .orderBy(desc(clients.createdAt));
     
     return result.map(row => ({
       ...row.client,
@@ -276,7 +279,8 @@ export class DatabaseStorage implements IStorage {
       })
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
-      .leftJoin(categories, eq(clients.categoryId, categories.id));
+      .leftJoin(categories, eq(clients.categoryId, categories.id))
+      .orderBy(desc(tasks.createdAt));
     
     return result.map(row => ({
       ...row.task,
@@ -320,7 +324,8 @@ export class DatabaseStorage implements IStorage {
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
       .leftJoin(categories, eq(clients.categoryId, categories.id))
-      .where(eq(tasks.clientId, clientId));
+      .where(eq(tasks.clientId, clientId))
+      .orderBy(desc(tasks.createdAt));
     
     return result.map(row => ({
       ...row.task,
@@ -341,7 +346,8 @@ export class DatabaseStorage implements IStorage {
       .from(tasks)
       .leftJoin(clients, eq(tasks.clientId, clients.id))
       .leftJoin(categories, eq(clients.categoryId, categories.id))
-      .where(eq(tasks.status, status as any));
+      .where(eq(tasks.status, status as any))
+      .orderBy(desc(tasks.createdAt));
     
     return result.map(row => ({
       ...row.task,
