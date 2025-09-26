@@ -60,15 +60,15 @@ export default function ViewClientModal({ open, onOpenChange, client }: ViewClie
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl flex items-center gap-2" data-testid="modal-client-title">
-            <User className="h-6 w-6 text-primary" />
+          <DialogTitle className="text-lg flex items-center gap-2" data-testid="modal-client-title">
+            <User className="h-5 w-5 text-primary" />
             {client.name}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Status and Category */}
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -102,29 +102,25 @@ export default function ViewClientModal({ open, onOpenChange, client }: ViewClie
 
           {/* Company Information */}
           {client.company && (
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Empresa:</span>
-              </div>
-              <div className="ml-6">
-                <p className="text-lg font-medium" data-testid="client-company">
+                <span className="text-sm font-medium" data-testid="client-company">
                   {client.company}
-                </p>
+                </span>
               </div>
             </div>
           )}
 
-          {client.company && <Separator />}
-
           {/* Contact Information */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              Información de Contacto
+              Contacto
             </h4>
             
-            <div className="ml-6 space-y-3">
+            <div className="ml-4 space-y-2">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Email:</span>
@@ -180,40 +176,32 @@ export default function ViewClientModal({ open, onOpenChange, client }: ViewClie
           <Separator />
 
           {/* Notes */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Notas:</span>
-            </div>
-            {client.notes ? (
+          {client.notes && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Notas:</span>
+              </div>
               <div 
-                className="ml-6 text-sm text-muted-foreground bg-muted p-4 rounded-md whitespace-pre-wrap"
+                className="ml-4 text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap"
                 data-testid="client-notes"
               >
                 {client.notes}
               </div>
-            ) : (
-              <p className="ml-6 text-sm text-muted-foreground italic">Sin notas adicionales</p>
-            )}
-          </div>
+            </div>
+          )}
 
           <Separator />
 
           {/* Timestamps */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Creado:</span>
-              <span className="text-muted-foreground" data-testid="client-created-date">
-                {format(new Date(client.createdAt!), "dd/MM/yyyy HH:mm")}
-              </span>
+              <Clock className="h-3 w-3" />
+              <span>Creado: {format(new Date(client.createdAt!), "dd/MM/yyyy")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Actualizado:</span>
-              <span className="text-muted-foreground" data-testid="client-updated-date">
-                {format(new Date(client.updatedAt!), "dd/MM/yyyy HH:mm")}
-              </span>
+              <Clock className="h-3 w-3" />
+              <span>Actualizado: {format(new Date(client.updatedAt!), "dd/MM/yyyy")}</span>
             </div>
           </div>
         </div>
