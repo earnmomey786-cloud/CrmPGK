@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/table";
 import MainLayout from "@/components/layout/main-layout";
 import NewClientModal from "@/components/modals/new-client-modal";
+import ViewClientModal from "@/components/modals/view-client-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { ClientWithCategory, Category } from "@shared/schema";
@@ -67,6 +68,7 @@ const ITEMS_PER_PAGE = 10;
 export default function Clients() {
   const [showNewClient, setShowNewClient] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientWithCategory | null>(null);
+  const [viewingClient, setViewingClient] = useState<ClientWithCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -327,7 +329,12 @@ export default function Clients() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end space-x-2">
-                            <Button variant="ghost" size="sm" data-testid={`button-view-client-${client.id}`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setViewingClient(client)}
+                              data-testid={`button-view-client-${client.id}`}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -414,6 +421,12 @@ export default function Clients() {
           open={showNewClient || !!editingClient}
           onOpenChange={handleCloseModal}
           editingClient={editingClient}
+        />
+
+        <ViewClientModal
+          open={!!viewingClient}
+          onOpenChange={(open) => !open && setViewingClient(null)}
+          client={viewingClient}
         />
       </div>
     </MainLayout>
