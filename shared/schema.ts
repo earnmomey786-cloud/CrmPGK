@@ -133,6 +133,26 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+// Motivational phrases table
+export const motivationalPhrases = pgTable("motivational_phrases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userEmail: text("user_email").references(() => users.email).notNull(),
+  phrase: text("phrase").notNull().default("¡Vamos por un día productivo! 💪"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Motivational phrases schemas
+export const insertMotivationalPhraseSchema = createInsertSchema(motivationalPhrases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Motivational phrases types
+export type InsertMotivationalPhrase = z.infer<typeof insertMotivationalPhraseSchema>;
+export type MotivationalPhrase = typeof motivationalPhrases.$inferSelect;
+
 // User mapping for display names
 export const userNames: Record<string, string> = {
   "info@bizneswhiszpanii.com": "Natalia",

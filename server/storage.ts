@@ -1,4 +1,4 @@
-import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, categories, clients, tasks, clientStatusHistory, users, getUserDisplayName } from "@shared/schema";
+import { type Client, type InsertClient, type Task, type InsertTask, type Category, type InsertCategory, type ClientWithCategory, type TaskWithClient, type ClientStatusHistory, type InsertClientStatusHistory, type User, type InsertUser, type MotivationalPhrase, type InsertMotivationalPhrase, categories, clients, tasks, clientStatusHistory, users, motivationalPhrases, getUserDisplayName } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { eq, sql, desc, and } from "drizzle-orm";
@@ -45,6 +45,10 @@ export interface IStorage {
   // Client Status History
   getClientStatusHistory(clientId: string): Promise<ClientStatusHistory[]>;
   createStatusHistoryEntry(entry: InsertClientStatusHistory): Promise<ClientStatusHistory>;
+
+  // Motivational Phrases
+  getMotivationalPhrase(userEmail: string): Promise<MotivationalPhrase | undefined>;
+  updateMotivationalPhrase(userEmail: string, phrase: string): Promise<MotivationalPhrase | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -504,6 +508,45 @@ export class DatabaseStorage implements IStorage {
       email: insertUser.email,
     }).returning();
     return user;
+  }
+
+  // Motivational Phrases methods
+  async getMotivationalPhrase(userEmail: string): Promise<MotivationalPhrase | undefined> {
+    const [phrase] = await db
+      .select()
+      .from(motivationalPhrases)
+      .where(eq(motivationalPhrases.userEmail, userEmail));
+    return phrase;
+  }
+
+  async updateMotivationalPhrase(userEmail: string, phrase: string): Promise<MotivationalPhrase | undefined> {
+    const [existingPhrase] = await db
+      .select()
+      .from(motivationalPhrases)
+      .where(eq(motivationalPhrases.userEmail, userEmail));
+
+    if (existingPhrase) {
+      // Update existing phrase
+      const [updated] = await db
+        .update(motivationalPhrases)
+        .set({ 
+          phrase: phrase, 
+          updatedAt: new Date() 
+        })
+        .where(eq(motivationalPhrases.userEmail, userEmail))
+        .returning();
+      return updated;
+    } else {
+      // Create new phrase
+      const [newPhrase] = await db
+        .insert(motivationalPhrases)
+        .values({
+          userEmail: userEmail,
+          phrase: phrase,
+        })
+        .returning();
+      return newPhrase;
+    }
   }
 }
 
