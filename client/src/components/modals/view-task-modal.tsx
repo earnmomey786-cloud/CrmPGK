@@ -49,7 +49,7 @@ export default function ViewTaskModal({ open, onOpenChange, task }: ViewTaskModa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-lg w-[95%] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl" data-testid="modal-task-title">
             {task.title}
