@@ -37,7 +37,7 @@ import NewTaskModal from "@/components/modals/new-task-modal";
 import ViewTaskModal from "@/components/modals/view-task-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { TaskWithClient, ClientWithCategory } from "@shared/schema";
+import type { TaskWithClient, ClientWithCategory, Category } from "@shared/schema";
 import { format } from "date-fns";
 
 const priorityColors = {
@@ -77,7 +77,7 @@ export default function Tasks() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
-  const [clientFilter, setClientFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   
   const isMobile = useIsMobile();
@@ -91,6 +91,10 @@ export default function Tasks() {
 
   const { data: clients = [] } = useQuery<ClientWithCategory[]>({
     queryKey: ["/api/clients"],
+  });
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
   });
 
   const deleteTaskMutation = useMutation({
@@ -124,11 +128,11 @@ export default function Tasks() {
       
       const matchesStatus = statusFilter === "all" || task.status === statusFilter;
       const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
-      const matchesClient = clientFilter === "all" || task.clientId === clientFilter;
+      const matchesCategory = categoryFilter === "all" || task.client?.categoryId === categoryFilter;
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesClient;
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
     });
-  }, [tasks, searchQuery, statusFilter, priorityFilter, clientFilter]);
+  }, [tasks, searchQuery, statusFilter, priorityFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -223,16 +227,16 @@ export default function Tasks() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Cliente</label>
-                <Select value={clientFilter} onValueChange={setClientFilter}>
-                  <SelectTrigger data-testid="select-filter-client">
-                    <SelectValue placeholder="Todos los clientes" />
+                <label className="block text-sm font-medium text-foreground mb-2">Categoría</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger data-testid="select-filter-category">
+                    <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los clientes</SelectItem>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -257,7 +261,7 @@ export default function Tasks() {
               <div className="text-center py-12">
                 <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || statusFilter || priorityFilter || clientFilter
+                  {searchQuery || statusFilter || priorityFilter || categoryFilter
                     ? "No se encontraron tareas con los filtros aplicados."
                     : "No hay tareas registradas aún."
                   }
