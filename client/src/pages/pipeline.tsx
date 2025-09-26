@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, User } from "lucide-react";
 import MainLayout from "@/components/layout/main-layout";
+import ViewClientModal from "@/components/modals/view-client-modal";
 import type { ClientWithCategory } from "@shared/schema";
 import { Link } from "wouter";
+import { useState } from "react";
 
 const pipelineStages = [
   { key: "nuevo", label: "Nuevo", color: "bg-chart-1", textColor: "text-chart-1" },
@@ -16,6 +18,8 @@ const pipelineStages = [
 ];
 
 export default function Pipeline() {
+  const [viewingClient, setViewingClient] = useState<ClientWithCategory | null>(null);
+  
   const { data: allClients = [], isLoading } = useQuery<ClientWithCategory[]>({
     queryKey: ["/api/clients"],
   });
@@ -126,6 +130,7 @@ export default function Pipeline() {
                             className="border-l-4 hover:shadow-md transition-shadow cursor-pointer"
                             style={{ borderLeftColor: `hsl(var(--chart-${pipelineStages.findIndex(s => s.key === stage.key) + 1}))` }}
                             data-testid={`pipeline-client-${client.id}`}
+                            onClick={() => setViewingClient(client)}
                           >
                             <CardContent className="p-2">
                               <div className="space-y-1">
@@ -149,6 +154,12 @@ export default function Pipeline() {
             </div>
           </>
         )}
+
+        <ViewClientModal
+          open={!!viewingClient}
+          onOpenChange={(open) => !open && setViewingClient(null)}
+          client={viewingClient}
+        />
       </div>
     </MainLayout>
   );

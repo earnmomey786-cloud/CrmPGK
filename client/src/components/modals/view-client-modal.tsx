@@ -4,6 +4,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -14,7 +20,10 @@ import {
   MessageSquare, 
   Clock, 
   FileText,
-  Tag
+  Tag,
+  Edit3,
+  Save,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 import type { ClientWithCategory } from "@shared/schema";
@@ -56,6 +65,50 @@ interface ViewClientModalProps {
 }
 
 export default function ViewClientModal({ open, onOpenChange, client }: ViewClientModalProps) {
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesText, setNotesText] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Initialize notes text when client changes
+  useEffect(() => {
+    setNotesText(client?.notes || "");
+    setEditingNotes(false);
+  }, [client]);
+
+  const updateNotesMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      const response = await apiRequest("PUT", `/api/clients/${client!.id}`, {
+        notes: notes || null,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Notas actualizadas",
+        description: "Las notas del cliente han sido actualizadas exitosamente.",
+      });
+      setEditingNotes(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "No se pudieron actualizar las notas. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveNotes = () => {
+    updateNotesMutation.mutate(notesText);
+  };
+
+  const handleCancelEdit = () => {
+    setNotesText(client?.notes || "");
+    setEditingNotes(false);
+  };
+
   if (!client) return null;
 
   return (
@@ -176,20 +229,65 @@ export default function ViewClientModal({ open, onOpenChange, client }: ViewClie
           <Separator />
 
           {/* Notes */}
-          {client.notes && (
-            <div className="space-y-1">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Notas:</span>
               </div>
-              <div 
-                className="ml-4 text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap"
-                data-testid="client-notes"
-              >
-                {client.notes}
-              </div>
+              {!editingNotes && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingNotes(true)}
+                  data-testid="button-edit-notes"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-          )}
+            
+            {editingNotes ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  placeholder="Escribe notas sobre este cliente..."
+                  rows={4}
+                  className="resize-none"
+                  data-testid="textarea-client-notes"
+                />
+                <div className="flex items-center gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    disabled={updateNotesMutation.isPending}
+                    data-testid="button-cancel-notes"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveNotes}
+                    disabled={updateNotesMutation.isPending}
+                    data-testid="button-save-notes"
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    {updateNotesMutation.isPending ? "Guardando..." : "Guardar"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="ml-4 text-sm text-muted-foreground bg-muted p-3 rounded-md whitespace-pre-wrap min-h-[60px]"
+                data-testid="client-notes-display"
+              >
+                {client.notes || "Sin notas registradas. Haz clic en el ícono de editar para agregar notas."}
+              </div>
+            )}
+          </div>
 
           <Separator />
 
