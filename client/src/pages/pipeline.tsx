@@ -25,20 +25,6 @@ export default function Pipeline() {
     return acc;
   }, {} as Record<string, ClientWithCategory[]>);
 
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - new Date(date).getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-    
-    if (days > 0) {
-      return `Hace ${days} día${days > 1 ? 's' : ''}`;
-    } else if (hours > 0) {
-      return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
-    } else {
-      return "Hace pocos minutos";
-    }
-  };
 
   if (isLoading) {
     return (
@@ -141,41 +127,14 @@ export default function Pipeline() {
                             style={{ borderLeftColor: `hsl(var(--chart-${pipelineStages.findIndex(s => s.key === stage.key) + 1}))` }}
                             data-testid={`pipeline-client-${client.id}`}
                           >
-                            <CardContent className="p-3">
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-medium text-sm text-foreground truncate">
-                                    {client.name}
-                                  </h4>
-                                  {client.company && (
-                                    <p className="text-xs text-muted-foreground truncate">
-                                      {client.company}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              
+                            <CardContent className="p-2">
                               <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {client.email}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {client.phone}
-                                </p>
+                                <h4 className="font-medium text-sm text-foreground truncate">
+                                  {client.name}
+                                </h4>
                                 {client.category && (
                                   <Badge variant="outline" className="text-xs">
                                     {client.category.name}
-                                  </Badge>
-                                )}
-                              </div>
-                              
-                              <div className="flex justify-between items-center mt-2 pt-2 border-t border-border">
-                                <span className="text-xs text-muted-foreground">
-                                  {formatRelativeTime(client.updatedAt!)}
-                                </span>
-                                {client.channel && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {client.channel}
                                   </Badge>
                                 )}
                               </div>
