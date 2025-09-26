@@ -94,49 +94,49 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {/* Action Buttons Section */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Button
             onClick={() => setShowNewClient(true)}
-            className="p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground flex flex-col items-center space-y-3 group"
+            className="p-3 sm:p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground flex flex-col items-center space-y-2 sm:space-y-3 group"
             data-testid="button-new-client"
           >
-            <UserPlus className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">Nuevo Cliente</span>
+            <UserPlus className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold text-xs sm:text-sm">Nuevo Cliente</span>
           </Button>
           
           <Button
             onClick={() => setShowNewTask(true)}
-            className="p-6 h-auto bg-secondary hover:bg-secondary/90 text-secondary-foreground flex flex-col items-center space-y-3 group"
+            className="p-3 sm:p-6 h-auto bg-secondary hover:bg-secondary/90 text-secondary-foreground flex flex-col items-center space-y-2 sm:space-y-3 group"
             data-testid="button-new-task"
           >
-            <Plus className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">Nueva Tarea</span>
+            <Plus className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold text-xs sm:text-sm">Nueva Tarea</span>
           </Button>
           
           <Link href="/clients">
             <Button
-              className="w-full p-6 h-auto bg-accent hover:bg-accent/90 text-accent-foreground flex flex-col items-center space-y-3 group"
+              className="w-full p-3 sm:p-6 h-auto bg-accent hover:bg-accent/90 text-accent-foreground flex flex-col items-center space-y-2 sm:space-y-3 group"
               data-testid="button-view-clients"
             >
-              <Users className="h-8 w-8 group-hover:scale-110 transition-transform" />
-              <span className="font-semibold">Ver Clientes</span>
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold text-xs sm:text-sm">Ver Clientes</span>
             </Button>
           </Link>
           
           <Link href="/tasks">
             <Button
-              className="w-full p-6 h-auto bg-muted hover:bg-muted/90 text-muted-foreground flex flex-col items-center space-y-3 group"
+              className="w-full p-3 sm:p-6 h-auto bg-muted hover:bg-muted/90 text-muted-foreground flex flex-col items-center space-y-2 sm:space-y-3 group"
               data-testid="button-view-tasks"
             >
-              <ListChecks className="h-8 w-8 group-hover:scale-110 transition-transform" />
-              <span className="font-semibold">Ver Tareas</span>
+              <ListChecks className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold text-xs sm:text-sm">Ver Tareas</span>
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Pipeline Overview */}
           <div className="lg:col-span-2">
             <Card>
@@ -150,9 +150,9 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 {statsLoading ? (
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="bg-background p-4 rounded-lg border animate-pulse">
+                      <div key={i} className="bg-background p-2 sm:p-4 rounded-lg border animate-pulse">
                         <div className="h-4 bg-muted rounded mb-2"></div>
                         <div className="h-8 bg-muted rounded mb-1"></div>
                         <div className="h-3 bg-muted rounded w-2/3"></div>
@@ -160,11 +160,11 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
                     {pipelineStages.map((stage) => (
-                      <div key={stage.key} className="bg-background p-4 rounded-lg border border-border">
-                        <h4 className="text-sm font-medium text-foreground mb-2">{stage.label}</h4>
-                        <div className={`text-2xl font-bold mb-1 ${stage.color.replace('bg-', 'text-')}`} data-testid={`stat-${stage.key}`}>
+                      <div key={stage.key} className="bg-background p-2 sm:p-4 rounded-lg border border-border">
+                        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-2">{stage.label}</h4>
+                        <div className={`text-lg sm:text-2xl font-bold mb-1 ${stage.color.replace('bg-', 'text-')}`} data-testid={`stat-${stage.key}`}>
                           {stats?.pipelineStats[stage.key as keyof typeof stats.pipelineStats] || 0}
                         </div>
                         <div className="text-xs text-muted-foreground">clientes</div>
@@ -213,7 +213,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Recent Clients */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Eye, 
@@ -77,6 +78,8 @@ export default function Tasks() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const isMobile = useIsMobile();
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -258,17 +261,95 @@ export default function Tasks() {
                   Crear primera tarea
                 </Button>
               </div>
+            ) : isMobile ? (
+              // Mobile card layout
+              <div className="space-y-4 p-4">
+                {paginatedTasks.map((task) => (
+                  <div 
+                    key={task.id} 
+                    className="bg-background rounded-lg border border-border p-4"
+                    data-testid={`task-card-${task.id}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-foreground mb-1">{task.title}</h3>
+                        {task.description && (
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                            {task.description}
+                          </p>
+                        )}
+                        {task.client && (
+                          <div className="flex items-center space-x-2 mb-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-foreground">{task.client.name}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1 ml-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setViewingTask(task)}
+                          data-testid={`button-view-task-${task.id}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" data-testid={`button-edit-task-${task.id}`}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDeleteTask(task.id, task.title)}
+                          className="text-destructive hover:text-destructive"
+                          data-testid={`button-delete-task-${task.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          className={statusColors[task.status as keyof typeof statusColors]}
+                          data-testid={`task-status-badge-${task.id}`}
+                        >
+                          {statusLabels[task.status as keyof typeof statusLabels]}
+                        </Badge>
+                        <Badge 
+                          className={priorityColors[task.priority as keyof typeof priorityColors]}
+                          data-testid={`task-priority-badge-${task.id}`}
+                        >
+                          {priorityLabels[task.priority as keyof typeof priorityLabels]}
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        {task.dueDate ? (
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            <span>{format(new Date(task.dueDate), "dd/MM")}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Sin fecha</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
+              // Desktop table layout
               <div className="overflow-auto max-h-[60vh]">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tarea</TableHead>
-                      <TableHead>Cliente</TableHead>
+                      <TableHead className="hidden md:table-cell">Cliente</TableHead>
                       <TableHead>Estado</TableHead>
-                      <TableHead>Prioridad</TableHead>
-                      <TableHead>Fecha Límite</TableHead>
-                      <TableHead>Última Act.</TableHead>
+                      <TableHead className="hidden lg:table-cell">Prioridad</TableHead>
+                      <TableHead className="hidden lg:table-cell">Fecha Límite</TableHead>
+                      <TableHead className="hidden md:table-cell">Última Act.</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -283,9 +364,15 @@ export default function Tasks() {
                                 {task.description}
                               </div>
                             )}
+                            {task.client && (
+                              <div className="md:hidden text-xs text-muted-foreground mt-1 flex items-center">
+                                <User className="h-3 w-3 mr-1" />
+                                {task.client.name}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {task.client ? (
                             <div className="flex items-center">
                               <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mr-2">
@@ -307,8 +394,16 @@ export default function Tasks() {
                           >
                             {statusLabels[task.status as keyof typeof statusLabels]}
                           </Badge>
+                          <div className="lg:hidden mt-1">
+                            <Badge 
+                              className={priorityColors[task.priority as keyof typeof priorityColors]}
+                              data-testid={`task-priority-badge-${task.id}`}
+                            >
+                              {priorityLabels[task.priority as keyof typeof priorityLabels]}
+                            </Badge>
+                          </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <Badge 
                             className={priorityColors[task.priority as keyof typeof priorityColors]}
                             data-testid={`task-priority-badge-${task.id}`}
@@ -316,7 +411,7 @@ export default function Tasks() {
                             {priorityLabels[task.priority as keyof typeof priorityLabels]}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {task.dueDate ? (
                             <div className="flex items-center text-sm">
                               <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
@@ -326,11 +421,11 @@ export default function Tasks() {
                             <span className="text-muted-foreground text-sm">Sin fecha</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {formatRelativeTime(task.updatedAt!)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
+                          <div className="flex items-center justify-end space-x-1">
                             <Button 
                               variant="ghost" 
                               size="sm" 

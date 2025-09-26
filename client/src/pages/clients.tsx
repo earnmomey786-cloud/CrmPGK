@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Eye, 
@@ -74,6 +75,8 @@ export default function Clients() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const isMobile = useIsMobile();
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -265,17 +268,108 @@ export default function Clients() {
                   Crear primer cliente
                 </Button>
               </div>
+            ) : isMobile ? (
+              // Mobile card layout
+              <div className="space-y-4 p-4">
+                {paginatedClients.map((client) => (
+                  <div 
+                    key={client.id} 
+                    className="bg-background rounded-lg border border-border p-4"
+                    data-testid={`client-card-${client.id}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-foreground">{client.name}</h3>
+                          {client.company && (
+                            <p className="text-sm text-muted-foreground">{client.company}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setViewingClient(client)}
+                          data-testid={`button-view-client-${client.id}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEditClient(client)}
+                          data-testid={`button-edit-client-${client.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDeleteClient(client.id, client.name)}
+                          className="text-destructive hover:text-destructive"
+                          data-testid={`button-delete-client-${client.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{client.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{client.phone}</span>
+                      </div>
+                      {client.channel && (
+                        <div className="flex items-center space-x-2">
+                          {channelIcons[client.channel as keyof typeof channelIcons]}
+                          <span className="text-foreground">
+                            {client.channel.charAt(0).toUpperCase() + client.channel.slice(1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          className={statusColors[client.status as keyof typeof statusColors]}
+                          data-testid={`client-status-badge-${client.id}`}
+                        >
+                          {statusLabels[client.status as keyof typeof statusLabels]}
+                        </Badge>
+                        {client.category && (
+                          <Badge variant="secondary" data-testid={`client-category-${client.id}`}>
+                            {client.category.name}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {formatRelativeTime(client.updatedAt!)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
+              // Desktop table layout
               <div className="overflow-auto max-h-[60vh]">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Cliente</TableHead>
-                      <TableHead>Contacto</TableHead>
+                      <TableHead className="hidden md:table-cell">Contacto</TableHead>
                       <TableHead>Estado</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead>Canal</TableHead>
-                      <TableHead>Última Act.</TableHead>
+                      <TableHead className="hidden lg:table-cell">Categoría</TableHead>
+                      <TableHead className="hidden lg:table-cell">Canal</TableHead>
+                      <TableHead className="hidden md:table-cell">Última Act.</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -292,10 +386,13 @@ export default function Clients() {
                               {client.company && (
                                 <div className="text-sm text-muted-foreground">{client.company}</div>
                               )}
+                              <div className="md:hidden text-xs text-muted-foreground mt-1">
+                                {client.email}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           <div className="text-sm text-foreground">{client.email}</div>
                           <div className="text-sm text-muted-foreground">{client.phone}</div>
                         </TableCell>
@@ -307,14 +404,14 @@ export default function Clients() {
                             {statusLabels[client.status as keyof typeof statusLabels]}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {client.category && (
                             <Badge variant="secondary" data-testid={`client-category-${client.id}`}>
                               {client.category.name}
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {client.channel && (
                             <div className="flex items-center">
                               {channelIcons[client.channel as keyof typeof channelIcons]}
@@ -324,11 +421,11 @@ export default function Clients() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           {formatRelativeTime(client.updatedAt!)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
+                          <div className="flex items-center justify-end space-x-1">
                             <Button 
                               variant="ghost" 
                               size="sm" 
