@@ -73,6 +73,7 @@ const ITEMS_PER_PAGE = 10;
 export default function Tasks() {
   const [showNewTask, setShowNewTask] = useState(false);
   const [viewingTask, setViewingTask] = useState<TaskWithClient | null>(null);
+  const [editingTask, setEditingTask] = useState<TaskWithClient | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -159,7 +160,10 @@ export default function Tasks() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground">Gestión de Tareas</h2>
           <Button 
-            onClick={() => setShowNewTask(true)}
+            onClick={() => {
+              setEditingTask(null);
+              setShowNewTask(true);
+            }}
             data-testid="button-new-task-page"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -257,7 +261,10 @@ export default function Tasks() {
                     : "No hay tareas registradas aún."
                   }
                 </p>
-                <Button onClick={() => setShowNewTask(true)}>
+                <Button onClick={() => {
+                  setEditingTask(null);
+                  setShowNewTask(true);
+                }}>
                   Crear primera tarea
                 </Button>
               </div>
@@ -294,7 +301,12 @@ export default function Tasks() {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" data-testid={`button-edit-task-${task.id}`}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => setEditingTask(task)}
+                          data-testid={`button-edit-task-${task.id}`}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 
@@ -434,7 +446,12 @@ export default function Tasks() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" data-testid={`button-edit-task-${task.id}`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setEditingTask(task)}
+                              data-testid={`button-edit-task-${task.id}`}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
@@ -510,8 +527,14 @@ export default function Tasks() {
         </Card>
 
         <NewTaskModal
-          open={showNewTask}
-          onOpenChange={setShowNewTask}
+          open={showNewTask || !!editingTask}
+          onOpenChange={(open) => {
+            if (!open) {
+              setShowNewTask(false);
+              setEditingTask(null);
+            }
+          }}
+          editingTask={editingTask}
         />
 
         <ViewTaskModal

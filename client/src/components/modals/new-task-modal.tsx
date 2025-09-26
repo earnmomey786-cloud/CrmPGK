@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertTaskSchema, type ClientWithCategory } from "@shared/schema";
+import { insertTaskSchema, type ClientWithCategory, type TaskWithClient } from "@shared/schema";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 
@@ -51,48 +51,81 @@ interface NewTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedClientId?: string;
+  editingTask?: TaskWithClient | null;
 }
 
-export default function NewTaskModal({ open, onOpenChange, selectedClientId }: NewTaskModalProps) {
+export default function NewTaskModal({ open, onOpenChange, selectedClientId, editingTask }: NewTaskModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      clientId: selectedClientId || "",
-      priority: "media",
-      status: "pendiente",
-      dueDate: undefined,
+      title: editingTask?.title || "",
+      description: editingTask?.description || "",
+      clientId: editingTask?.clientId || selectedClientId || "",
+      priority: editingTask?.priority || "media",
+      status: editingTask?.status || "pendiente",
+      dueDate: editingTask?.dueDate ? new Date(editingTask.dueDate) : undefined,
     },
   });
+
+  // Reset form when editingTask changes
+  useEffect(() => {
+    if (editingTask) {
+      form.reset({
+        title: editingTask.title,
+        description: editingTask.description || "",
+        clientId: editingTask.clientId || "",
+        priority: editingTask.priority,
+        status: editingTask.status,
+        dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
+      });
+    } else {
+      form.reset({
+        title: "",
+        description: "",
+        clientId: selectedClientId || "",
+        priority: "media",
+        status: "pendiente",
+        dueDate: undefined,
+      });
+    }
+  }, [editingTask, selectedClientId, form]);
 
   const { data: clients = [] } = useQuery<ClientWithCategory[]>({
     queryKey: ["/api/clients"],
   });
 
-  const createTaskMutation = useMutation({
+  const saveTaskMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("POST", "/api/tasks", data);
-      return response.json();
+      if (editingTask) {
+        const response = await apiRequest("PUT", `/api/tasks/${editingTask.id}`, data);
+        return response.json();
+      } else {
+        const response = await apiRequest("POST", "/api/tasks", data);
+        return response.json();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
-        title: "Tarea creada",
-        description: "La tarea ha sido creada exitosamente.",
+        title: editingTask ? "Tarea actualizada" : "Tarea creada",
+        description: editingTask 
+          ? "La tarea ha sido actualizada exitosamente."
+          : "La tarea ha sido creada exitosamente.",
       });
       form.reset();
       onOpenChange(false);
     },
     onError: (error: any) => {
-      console.error("Error creating task:", error);
+      console.error("Error saving task:", error);
       toast({
         title: "Error",
-        description: "No se pudo crear la tarea. Intenta de nuevo.",
+        description: editingTask 
+          ? "No se pudo actualizar la tarea. Intenta de nuevo."
+          : "No se pudo crear la tarea. Intenta de nuevo.",
         variant: "destructive",
       });
     },
@@ -108,16 +141,19 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
     };
     console.log("Sending task data:", cleanedData);
-    createTaskMutation.mutate(cleanedData);
+    saveTaskMutation.mutate(cleanedData);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nueva Tarea</DialogTitle>
+          <DialogTitle>{editingTask ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
           <DialogDescription>
-            Crea una nueva tarea para gestionar el trabajo de tu equipo.
+            {editingTask 
+              ? "Modifica los detalles de la tarea existente."
+              : "Crea una nueva tarea para gestionar el trabajo de tu equipo."
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -165,7 +201,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cliente</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger data-testid="select-task-client">
                           <SelectValue placeholder="Seleccionar cliente" />
@@ -190,7 +226,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Prioridad</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-task-priority">
                           <SelectValue />
@@ -214,7 +250,7 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-task-status">
                           <SelectValue />
@@ -287,10 +323,12 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId }: N
               </Button>
               <Button
                 type="submit"
-                disabled={createTaskMutation.isPending}
+                disabled={saveTaskMutation.isPending}
                 data-testid="button-save-task"
               >
-                {createTaskMutation.isPending ? "Guardando..." : "Guardar Tarea"}
+                {saveTaskMutation.isPending 
+                  ? "Guardando..."
+                  : editingTask ? "Actualizar Tarea" : "Guardar Tarea"}
               </Button>
             </div>
           </form>
