@@ -515,37 +515,28 @@ export class DatabaseStorage implements IStorage {
     const [phrase] = await db
       .select()
       .from(globalMotivationalPhrase)
-      .limit(1);
+      .where(eq(globalMotivationalPhrase.id, "global"));
     return phrase;
   }
 
   async updateGlobalMotivationalPhrase(phrase: string): Promise<GlobalMotivationalPhrase | undefined> {
-    const [existingPhrase] = await db
-      .select()
-      .from(globalMotivationalPhrase)
-      .limit(1);
-
-    if (existingPhrase) {
-      // Update existing phrase
-      const [updated] = await db
-        .update(globalMotivationalPhrase)
-        .set({ 
-          phrase: phrase, 
-          updatedAt: new Date() 
-        })
-        .where(eq(globalMotivationalPhrase.id, existingPhrase.id))
-        .returning();
-      return updated;
-    } else {
-      // Create new phrase
-      const [newPhrase] = await db
-        .insert(globalMotivationalPhrase)
-        .values({
+    // Use upsert with fixed ID to guarantee single row
+    const [updated] = await db
+      .insert(globalMotivationalPhrase)
+      .values({
+        id: "global",
+        phrase: phrase,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: globalMotivationalPhrase.id,
+        set: {
           phrase: phrase,
-        })
-        .returning();
-      return newPhrase;
-    }
+          updatedAt: new Date()
+        }
+      })
+      .returning();
+    return updated;
   }
 }
 

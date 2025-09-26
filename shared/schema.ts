@@ -135,7 +135,7 @@ export type User = typeof users.$inferSelect;
 
 // Global motivational phrase table (shared by all users)
 export const globalMotivationalPhrase = pgTable("global_motivational_phrase", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().default("global"),
   phrase: text("phrase").notNull().default("¡Vamos por un día productivo! 💪"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
