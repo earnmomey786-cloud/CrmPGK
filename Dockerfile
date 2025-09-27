@@ -15,8 +15,11 @@ RUN npm ci
 COPY . .
 
 # Build the application
-# This builds both frontend (vite build) and backend (esbuild)
+# Frontend build
 RUN npm run build
+
+# Manually build production server (without vite dependencies)
+RUN npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
 # Production stage
 FROM node:20-alpine AS production
@@ -53,5 +56,5 @@ ENV PORT=5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
   CMD node -e "const http = require('http'); const options = { host: '127.0.0.1', port: process.env.PORT || 5000, path: '/api/health', timeout: 2000 }; const req = http.request(options, (res) => { res.statusCode === 200 ? process.exit(0) : process.exit(1) }); req.on('error', () => process.exit(1)); req.end();"
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (production server without vite)
+CMD ["node", "dist/production.js"]
