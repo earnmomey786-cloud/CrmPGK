@@ -69,6 +69,8 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
       priority: editingTask?.priority || "media",
       status: editingTask?.status || "pendiente",
       dueDate: editingTask?.dueDate ? new Date(editingTask.dueDate) : undefined,
+      budget: editingTask?.budget || "",
+      invoiceType: editingTask?.invoiceType || "",
     },
   });
 
@@ -83,6 +85,8 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         priority: editingTask.priority,
         status: editingTask.status,
         dueDate: editingTask.dueDate ? new Date(editingTask.dueDate) : undefined,
+        budget: editingTask.budget || "",
+        invoiceType: editingTask.invoiceType || "",
       });
     } else {
       form.reset({
@@ -93,6 +97,8 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
         priority: "media",
         status: "pendiente",
         dueDate: undefined,
+        budget: "",
+        invoiceType: "",
       });
     }
   }, [editingTask, selectedClientId, form]);
@@ -341,6 +347,51 @@ export default function NewTaskModal({ open, onOpenChange, selectedClientId, edi
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="budget"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Presupuesto</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        placeholder="250.00" 
+                        {...field} 
+                        value={field.value || ""} 
+                        data-testid="input-task-budget" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="invoiceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Facturación</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-task-invoice-type">
+                          <SelectValue placeholder="Seleccionar tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="con-factura">Con factura</SelectItem>
+                        <SelectItem value="sin-factura">Sin factura</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

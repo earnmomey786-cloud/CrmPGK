@@ -74,6 +74,7 @@ export default function Clients() {
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
+  const [invoiceFilter, setInvoiceFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   
   const isMobile = useIsMobile();
@@ -121,10 +122,11 @@ export default function Clients() {
       const matchesStatus = !statusFilter || client.status === statusFilter;
       const matchesCategory = !categoryFilter || client.categoryId === categoryFilter;
       const matchesChannel = !channelFilter || client.channel === channelFilter;
+      const matchesInvoice = !invoiceFilter || client.invoiceType === invoiceFilter;
       
-      return matchesSearch && matchesStatus && matchesCategory && matchesChannel;
+      return matchesSearch && matchesStatus && matchesCategory && matchesChannel && matchesInvoice;
     });
-  }, [clients, searchQuery, statusFilter, categoryFilter, channelFilter]);
+  }, [clients, searchQuery, statusFilter, categoryFilter, channelFilter, invoiceFilter]);
 
   const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -240,6 +242,18 @@ export default function Clients() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Facturación</label>
+                <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
+                  <SelectTrigger data-testid="select-filter-invoice">
+                    <SelectValue placeholder="Todos los tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="con-factura">Con factura</SelectItem>
+                    <SelectItem value="sin-factura">Sin factura</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -259,7 +273,7 @@ export default function Clients() {
               <div className="text-center py-12">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || statusFilter || categoryFilter || channelFilter
+                  {searchQuery || statusFilter || categoryFilter || channelFilter || invoiceFilter
                     ? "No se encontraron clientes con los filtros aplicados."
                     : "No hay clientes registrados aún."
                   }
