@@ -271,8 +271,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteClient(id: string): Promise<boolean> {
-    const result = await db.delete(clients).where(eq(clients.id, id));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      // First delete all tasks associated with this client
+      await db.delete(tasks).where(eq(tasks.clientId, id));
+      
+      // Then delete the client (status history will be auto-deleted due to cascade)
+      const result = await db.delete(clients).where(eq(clients.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      return false;
+    }
   }
 
   // Tasks
