@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, serial, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -36,6 +36,8 @@ export const clients = pgTable("clients", {
   categoryId: varchar("category_id").references(() => categories.id),
   status: text("status").$type<PipelineStatus>().notNull().default("nuevo"),
   notes: text("notes"),
+  budget: decimal("budget", { precision: 10, scale: 2 }), // Campo opcional para presupuesto
+  invoiceType: text("invoice_type"), // "con-factura" / "sin-factura" - opcional
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -50,6 +52,8 @@ export const tasks = pgTable("tasks", {
   priority: text("priority").$type<TaskPriority>().notNull().default("media"),
   status: text("status").$type<TaskStatus>().notNull().default("pendiente"),
   dueDate: timestamp("due_date"),
+  budget: decimal("budget", { precision: 10, scale: 2 }), // Campo opcional para presupuesto
+  invoiceType: text("invoice_type"), // "con-factura" / "sin-factura" - opcional
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
