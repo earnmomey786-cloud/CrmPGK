@@ -127,6 +127,20 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Session table (preserved from existing database)
+export const session = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
+// Motivational phrases table (preserved from existing database) 
+export const motivational_phrases = pgTable("motivational_phrases", {
+  id: serial("id").primaryKey(),
+  phrase: text("phrase").notNull(),
+  author: text("author"),
+});
+
 // User schemas  
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
