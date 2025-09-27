@@ -1,0 +1,192 @@
+cción"
+Commit: Fix errors that prevent the application from running correctly
+
+Resolve runtime errors by addressing configuration and dependency issues.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: c3e48f33-3b38-4257-91b5-7b42604abd67
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/c40b3923-7f3a-4668-a170-265758f1f31c/c3e48f33-3b38-4257-91b5-7b42604abd67/tU4OlRe 
+##########################################
+### Download Github Archive Started...
+### Sat, 27 Sep 2025 09:54:34 GMT
+##########################################
+
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.54kB done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 1.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 655B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722
+#5 resolve docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722 0.1s done
+#5 DONE 0.1s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722
+#5 sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722 7.67kB / 7.67kB done
+#5 sha256:6a91081a440be0b57336fbc4ee87f3dab1a2fd6f80cdb355dcf960e13bda3b59 1.72kB / 1.72kB done
+#5 sha256:6c47bbfd232eca9b18296c2b2f3fbf6154c19117ed02a992f7bd6814377df62d 6.42kB / 6.42kB done
+#5 sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 0B / 3.80MB 0.1s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 0B / 42.75MB 0.1s
+#5 ...
+
+#4 [internal] load build context
+#4 transferring context: 3.43MB 0.1s done
+#4 DONE 0.2s
+
+#5 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722
+#5 sha256:fd345d7e43c58474c833bee593321ab1097dd720bebd8032e75fbf5b81b1e554 0B / 1.26MB 0.2s
+#5 sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 1.05MB / 3.80MB 0.5s
+#5 sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 2.10MB / 3.80MB 0.7s
+#5 sha256:fd345d7e43c58474c833bee593321ab1097dd720bebd8032e75fbf5b81b1e554 1.05MB / 1.26MB 0.7s
+#5 sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 3.80MB / 3.80MB 0.9s
+#5 sha256:fd345d7e43c58474c833bee593321ab1097dd720bebd8032e75fbf5b81b1e554 1.26MB / 1.26MB 0.7s done
+#5 sha256:0de821d16564893ff12fae9499550711d92157ed1e6705a8c7f7e63eac0a2bb9 0B / 449B 0.9s
+#5 sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 3.80MB / 3.80MB 0.9s done
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 3.15MB / 42.75MB 1.0s
+#5 sha256:0de821d16564893ff12fae9499550711d92157ed1e6705a8c7f7e63eac0a2bb9 449B / 449B 0.9s done
+#5 extracting sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8
+#5 extracting sha256:9824c27679d3b27c5e1cb00a73adb6f4f8d556994111c12db3c5d61a0c843df8 0.2s done
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 6.29MB / 42.75MB 2.4s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 9.44MB / 42.75MB 3.2s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 12.58MB / 42.75MB 3.6s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 15.73MB / 42.75MB 4.7s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 18.87MB / 42.75MB 5.5s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 22.02MB / 42.75MB 6.3s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 25.17MB / 42.75MB 8.0s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 28.31MB / 42.75MB 10.3s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 31.46MB / 42.75MB 11.6s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 34.60MB / 42.75MB 12.6s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 37.75MB / 42.75MB 15.0s
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 40.89MB / 42.75MB 16.9s
+#5 extracting sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82
+#5 sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 42.75MB / 42.75MB 18.0s done
+#5 extracting sha256:c88300f8759af46375ccc157a0a0dbf7cdaeded52394b5ce2ce074e3b773fe82 2.6s done
+#5 extracting sha256:fd345d7e43c58474c833bee593321ab1097dd720bebd8032e75fbf5b81b1e554
+#5 extracting sha256:fd345d7e43c58474c833bee593321ab1097dd720bebd8032e75fbf5b81b1e554 0.1s done
+#5 extracting sha256:0de821d16564893ff12fae9499550711d92157ed1e6705a8c7f7e63eac0a2bb9
+#5 extracting sha256:0de821d16564893ff12fae9499550711d92157ed1e6705a8c7f7e63eac0a2bb9 done
+#5 DONE 22.4s
+
+#6 [builder 2/6] WORKDIR /app
+#6 DONE 0.3s
+
+#7 [builder 3/6] COPY package*.json ./
+#7 DONE 0.1s
+
+#8 [production 4/8] RUN npm ci --omit=dev && npm cache clean --force
+#8 ...
+
+#9 [builder 4/6] RUN npm ci
+#9 15.89 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+#9 16.23 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+#9 ...
+
+#8 [production 4/8] RUN npm ci --omit=dev && npm cache clean --force
+#8 24.02 
+#8 24.02 added 376 packages, and audited 377 packages in 24s
+#8 24.03 
+#8 24.03 54 packages are looking for funding
+#8 24.03   run `npm fund` for details
+#8 24.03 
+#8 24.03 3 low severity vulnerabilities
+#8 24.03 
+#8 24.03 To address all issues, run:
+#8 24.03   npm audit fix
+#8 24.03 
+#8 24.03 Run `npm audit` for details.
+#8 24.04 npm notice
+#8 24.04 npm notice New major version of npm available! 10.8.2 -> 11.6.1
+#8 24.04 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.1
+#8 24.04 npm notice To update run: npm install -g npm@11.6.1
+#8 24.04 npm notice
+#8 24.43 npm warn using --force Recommended protections disabled.
+#8 DONE 26.6s
+
+#9 [builder 4/6] RUN npm ci
+#9 29.19 
+#9 29.19 added 483 packages, and audited 484 packages in 29s
+#9 29.19 
+#9 29.19 66 packages are looking for funding
+#9 29.19   run `npm fund` for details
+#9 29.24 
+#9 29.24 8 vulnerabilities (3 low, 5 moderate)
+#9 29.24 
+#9 29.24 To address issues that do not require attention, run:
+#9 29.24   npm audit fix
+#9 29.24 
+#9 29.24 To address all issues (including breaking changes), run:
+#9 29.24   npm audit fix --force
+#9 29.24 
+#9 29.24 Run `npm audit` for details.
+#9 29.24 npm notice
+#9 29.24 npm notice New major version of npm available! 10.8.2 -> 11.6.1
+#9 29.24 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.1
+#9 29.24 npm notice To update run: npm install -g npm@11.6.1
+#9 29.24 npm notice
+#9 DONE 29.8s
+
+#10 [builder 5/6] COPY . .
+#10 DONE 0.2s
+
+#11 [builder 6/6] RUN npm run build
+#11 0.367 
+#11 0.367 > rest-express@1.0.0 build
+#11 0.367 > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+#11 0.367 
+#11 0.821 vite v5.4.20 building for production...
+#11 0.907 transforming...
+#11 1.524 Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+#11 1.524   npx update-browserslist-db@latest
+#11 1.524   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+#11 12.85 ✓ 2669 modules transformed.
+#11 13.59 rendering chunks...
+#11 13.61 computing gzip size...
+#11 13.64 ../dist/public/index.html                   1.95 kB │ gzip:   0.74 kB
+#11 13.64 ../dist/public/assets/index-GbSOWhnp.css   65.38 kB │ gzip:  11.38 kB
+#11 13.64 ../dist/public/assets/index-9vhxbLcO.js   605.20 kB │ gzip: 177.76 kB
+#11 13.64 
+#11 13.64 (!) Some chunks are larger than 500 kB after minification. Consider:
+#11 13.64 - Using dynamic import() to code-split the application
+#11 13.64 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#11 13.64 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#11 13.64 ✓ built in 12.78s
+#11 13.73 
+#11 13.73   dist/index.js  40.6kb
+#11 13.73 
+#11 13.73 ⚡ Done in 19ms
+#11 DONE 13.9s
+
+#12 [production 5/8] COPY --from=builder /app/dist ./dist
+#12 CACHED
+
+#13 [production 6/8] COPY --from=builder /app/client/dist ./client/dist
+#13 ERROR: failed to calculate checksum of ref cbdc0a96-77cd-47f1-86ca-0ea6af466c1d::x4adb5022whun1rkdltaetquh: "/app/client/dist": not found
+------
+ > [production 6/8] COPY --from=builder /app/client/dist ./client/dist:
+------
+Dockerfile:34
+--------------------
+  32 |     # Copy built application from builder stage
+  33 |     COPY --from=builder /app/dist ./dist
+  34 | >>> COPY --from=builder /app/client/dist ./client/dist
+  35 |     
+  36 |     # Create non-root user for security
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref cbdc0a96-77cd-47f1-86ca-0ea6af466c1d::x4adb5022whun1rkdltaetquh: "/app/client/dist": not found
+##########################################
+### Error
+### Sat, 27 Sep 2025 09:55:45 GMT
+##########################################
+
+Command failed with exit code 1: docker buildx build --network host -f /etc/easypanel/projects/nati/crmtotal/code/Dockerfile -t easypanel/nati/crmtotal --label 'keep=true' --build-arg 'NODE_ENV=production' --build-arg 'DATABASE_URL=postgresql://postgres.objheuktyjmvqgjwsgzk:Kocham647.12@aws-1-eu-west-3.pooler.supabase.com:6543/postgres' --build-arg 'SESSION_SECRET=tu-secret-session-key-aqui' --build-arg 'PORT=5000' --build-arg 'GIT_SHA=0eb83106ce5082cff96d2d0459e8ea4b902ffc5a' /etc/easypanel/projects/nati/crmtotal/code/
