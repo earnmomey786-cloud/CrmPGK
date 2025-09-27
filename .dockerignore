@@ -1,0 +1,70 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Development files
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production.local
+client/.env*
+server/.env*
+
+# Build outputs
+dist
+build
+
+# Cache directories
+.npm
+.cache
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs
+*.log
+
+# Replit specific
+.replit
+replit.nix
+
+# Git
+.git
+.gitignore
+
+# Development tools
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Test files
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Temporary files
+tmp/
+temp/

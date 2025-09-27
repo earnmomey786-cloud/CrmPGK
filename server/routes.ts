@@ -6,6 +6,11 @@ import { z } from "zod";
 import { requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint - No auth required
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // Categories routes - Protected
   app.get("/api/categories", requireAuth, async (req, res) => {
     try {
