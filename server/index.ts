@@ -1,9 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 import { setupAuth } from "./auth";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 
@@ -67,6 +68,36 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simple logger function for production
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+// Production static file serving (no vite imports)
+function serveStaticProduction(app: express.Express) {
+  const distPath = path.resolve(import.meta.dirname, "public");
+
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+    );
+  }
+
+  app.use(express.static(distPath));
+
+  // fall through to index.html if the file doesn't exist
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+}
+
 (async () => {
   const server = await registerRoutes(app);
 
@@ -82,9 +113,10 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    serveStaticProduction(app);
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
