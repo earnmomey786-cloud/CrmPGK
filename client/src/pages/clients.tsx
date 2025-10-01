@@ -75,6 +75,7 @@ export default function Clients() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [channelFilter, setChannelFilter] = useState("");
   const [invoiceFilter, setInvoiceFilter] = useState("");
+  const [budgetStatusFilter, setBudgetStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   
   const isMobile = useIsMobile();
@@ -123,10 +124,11 @@ export default function Clients() {
       const matchesCategory = !categoryFilter || client.categoryId === categoryFilter;
       const matchesChannel = !channelFilter || client.channel === channelFilter;
       const matchesInvoice = !invoiceFilter || client.invoiceType === invoiceFilter;
+      const matchesBudgetStatus = !budgetStatusFilter || client.budgetStatus === budgetStatusFilter;
       
-      return matchesSearch && matchesStatus && matchesCategory && matchesChannel && matchesInvoice;
+      return matchesSearch && matchesStatus && matchesCategory && matchesChannel && matchesInvoice && matchesBudgetStatus;
     });
-  }, [clients, searchQuery, statusFilter, categoryFilter, channelFilter, invoiceFilter]);
+  }, [clients, searchQuery, statusFilter, categoryFilter, channelFilter, invoiceFilter, budgetStatusFilter]);
 
   const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -254,6 +256,19 @@ export default function Clients() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Estado Presupuesto</label>
+                <Select value={budgetStatusFilter} onValueChange={setBudgetStatusFilter}>
+                  <SelectTrigger data-testid="select-filter-budget-status">
+                    <SelectValue placeholder="Todos los estados" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pagado">Pagado</SelectItem>
+                    <SelectItem value="no-acepta">No acepta</SelectItem>
+                    <SelectItem value="para-mas-tarde">Para más tarde</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -273,7 +288,7 @@ export default function Clients() {
               <div className="text-center py-12">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || statusFilter || categoryFilter || channelFilter || invoiceFilter
+                  {searchQuery || statusFilter || categoryFilter || channelFilter || invoiceFilter || budgetStatusFilter
                     ? "No se encontraron clientes con los filtros aplicados."
                     : "No hay clientes registrados aún."
                   }
@@ -382,6 +397,8 @@ export default function Clients() {
                       <TableHead className="hidden md:table-cell">Contacto</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="hidden lg:table-cell">Categoría</TableHead>
+                      <TableHead className="hidden xl:table-cell">NIE</TableHead>
+                      <TableHead className="hidden xl:table-cell">Estado Presup.</TableHead>
                       <TableHead className="hidden lg:table-cell">Canal</TableHead>
                       <TableHead className="hidden md:table-cell">Última Act.</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
@@ -422,6 +439,21 @@ export default function Clients() {
                           {client.category && (
                             <Badge variant="secondary" data-testid={`client-category-${client.id}`}>
                               {client.category.name}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <span className="text-sm text-foreground" data-testid={`client-nie-${client.id}`}>
+                            {client.nie || "-"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          {client.budgetStatus && (
+                            <Badge 
+                              variant={client.budgetStatus === "pagado" ? "default" : client.budgetStatus === "no-acepta" ? "destructive" : "secondary"}
+                              data-testid={`client-budget-status-${client.id}`}
+                            >
+                              {client.budgetStatus === "pagado" ? "Pagado" : client.budgetStatus === "no-acepta" ? "No acepta" : "Para más tarde"}
                             </Badge>
                           )}
                         </TableCell>

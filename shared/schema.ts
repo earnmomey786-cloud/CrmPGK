@@ -7,6 +7,10 @@ import { z } from "zod";
 export const pipelineStatus = ["nuevo", "presupuesto-enviado", "presupuesto-pagado", "en-tareas", "terminado"] as const;
 export type PipelineStatus = typeof pipelineStatus[number];
 
+// Budget status enum
+export const budgetStatus = ["pagado", "no-acepta", "para-mas-tarde"] as const;
+export type BudgetStatus = typeof budgetStatus[number];
+
 // Task priority enum
 export const taskPriority = ["baja", "media", "alta", "urgente"] as const;
 export type TaskPriority = typeof taskPriority[number];
@@ -36,7 +40,9 @@ export const clients = pgTable("clients", {
   categoryId: varchar("category_id").references(() => categories.id),
   status: text("status").$type<PipelineStatus>().notNull().default("nuevo"),
   notes: text("notes"),
+  nie: text("nie"), // Número de documento NIE - opcional
   budget: decimal("budget", { precision: 10, scale: 2 }), // Campo opcional para presupuesto
+  budgetStatus: text("budget_status").$type<BudgetStatus>(), // Estado del presupuesto: pagado, no-acepta, para-mas-tarde
   invoiceType: text("invoice_type"), // "con-factura" / "sin-factura" - opcional
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

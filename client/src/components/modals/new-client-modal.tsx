@@ -61,7 +61,9 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
       categoryId: editingClient?.categoryId || "",
       status: editingClient?.status || "nuevo",
       notes: editingClient?.notes || "",
+      nie: editingClient?.nie || "",
       budget: editingClient?.budget || "",
+      budgetStatus: editingClient?.budgetStatus || "",
       invoiceType: editingClient?.invoiceType || "",
     },
   });
@@ -83,7 +85,9 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
         categoryId: editingClient.categoryId || "",
         status: editingClient.status,
         notes: editingClient.notes || "",
+        nie: editingClient.nie || "",
         budget: editingClient.budget || "",
+        budgetStatus: editingClient.budgetStatus || "",
         invoiceType: editingClient.invoiceType || "",
       });
     } else {
@@ -97,7 +101,9 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
         categoryId: "",
         status: "nuevo",
         notes: "",
+        nie: "",
         budget: "",
+        budgetStatus: "",
         invoiceType: "",
       });
     }
@@ -269,6 +275,43 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
                         <SelectItem value="presupuesto-pagado">Presupuesto Pagado</SelectItem>
                         <SelectItem value="en-tareas">En Tareas</SelectItem>
                         <SelectItem value="terminado">Terminado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="nie"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>NIE/Documento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: X1234567Y" {...field} value={field.value || ""} data-testid="input-client-nie" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="budgetStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado del Presupuesto</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-client-budget-status">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pagado">Pagado</SelectItem>
+                        <SelectItem value="no-acepta">No acepta</SelectItem>
+                        <SelectItem value="para-mas-tarde">Para más tarde</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
