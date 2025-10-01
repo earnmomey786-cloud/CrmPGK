@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Eye, 
@@ -81,6 +82,7 @@ export default function Tasks() {
   const [currentPage, setCurrentPage] = useState(1);
   
   const isMobile = useIsMobile();
+  const [location, setLocation] = useLocation();
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -96,6 +98,19 @@ export default function Tasks() {
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.split('?')[1] || '');
+    const openTaskId = params.get('openTask');
+    
+    if (openTaskId && tasks.length > 0) {
+      const taskToOpen = tasks.find(t => t.id === openTaskId);
+      if (taskToOpen) {
+        setViewingTask(taskToOpen);
+        setLocation('/tasks');
+      }
+    }
+  }, [location, tasks, setLocation]);
 
   const deleteTaskMutation = useMutation({
     mutationFn: async (id: string) => {

@@ -9,6 +9,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { format } from "date-fns";
 import type { TaskWithClient } from "@shared/schema";
 
@@ -21,6 +22,7 @@ export default function NotificationDropdown({ notificationCount }: Notification
   const [isEditingPhrase, setIsEditingPhrase] = useState(false);
   const [phraseInput, setPhraseInput] = useState("");
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   // Query for pending tasks
   const { data: pendingTasks = [], isLoading: tasksLoading } = useQuery<TaskWithClient[]>({
@@ -72,6 +74,11 @@ export default function NotificationDropdown({ notificationCount }: Notification
   const handleCancelEdit = () => {
     setIsEditingPhrase(false);
     setPhraseInput("");
+  };
+
+  const handleTaskClick = (taskId: string) => {
+    setIsOpen(false);
+    setLocation(`/tasks?openTask=${taskId}`);
   };
 
   return (
@@ -186,7 +193,8 @@ export default function NotificationDropdown({ notificationCount }: Notification
                 {pendingTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => handleTaskClick(task.id)}
                     data-testid={`task-notification-${task.id}`}
                   >
                     <div className="flex items-start justify-between mb-1">
