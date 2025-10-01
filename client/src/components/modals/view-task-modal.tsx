@@ -117,6 +117,12 @@ export default function ViewTaskModal({ open, onOpenChange, task }: ViewTaskModa
                     {task.client.phone}
                   </p>
                 )}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">NIE:</span>
+                  <span className="text-sm text-muted-foreground" data-testid="task-client-nie">
+                    {task.client.nie || "No especificado"}
+                  </span>
+                </div>
               </div>
             </div>
           )}

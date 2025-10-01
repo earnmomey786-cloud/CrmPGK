@@ -166,6 +166,17 @@ export default function ViewClientModal({ open, onOpenChange, client }: ViewClie
             </div>
           )}
 
+          {/* NIE Information */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">NIE/Documento:</span>
+              <span className="text-sm" data-testid="client-nie">
+                {client.nie || "No especificado"}
+              </span>
+            </div>
+          </div>
+
           {/* Contact Information */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
