@@ -43,7 +43,6 @@ export const clients = pgTable("clients", {
   nie: text("nie"), // Número de documento NIE - opcional
   budget: decimal("budget", { precision: 10, scale: 2 }), // Campo opcional para presupuesto
   budgetStatus: text("budget_status").$type<BudgetStatus>(), // Estado del presupuesto: pagado, no-acepta, para-mas-tarde
-  invoiceType: text("invoice_type"), // "con-factura" / "sin-factura" - opcional
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -59,7 +58,6 @@ export const tasks = pgTable("tasks", {
   status: text("status").$type<TaskStatus>().notNull().default("pendiente"),
   dueDate: timestamp("due_date"),
   budget: decimal("budget", { precision: 10, scale: 2 }), // Campo opcional para presupuesto
-  invoiceType: text("invoice_type"), // "con-factura" / "sin-factura" - opcional
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

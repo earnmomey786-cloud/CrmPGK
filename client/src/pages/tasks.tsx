@@ -78,7 +78,6 @@ export default function Tasks() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [invoiceFilter, setInvoiceFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   
   const isMobile = useIsMobile();
@@ -130,11 +129,10 @@ export default function Tasks() {
       const matchesStatus = statusFilter === "all" || task.status === statusFilter;
       const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
       const matchesCategory = categoryFilter === "all" || task.client?.categoryId === categoryFilter;
-      const matchesInvoice = invoiceFilter === "all" || task.invoiceType === invoiceFilter;
       
-      return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesInvoice;
+      return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
     });
-  }, [tasks, searchQuery, statusFilter, priorityFilter, categoryFilter, invoiceFilter]);
+  }, [tasks, searchQuery, statusFilter, priorityFilter, categoryFilter]);
 
   const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -241,19 +239,6 @@ export default function Tasks() {
                         {category.name}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Facturación</label>
-                <Select value={invoiceFilter} onValueChange={setInvoiceFilter}>
-                  <SelectTrigger data-testid="select-filter-invoice-task">
-                    <SelectValue placeholder="Todos los tipos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
-                    <SelectItem value="con-factura">Con factura</SelectItem>
-                    <SelectItem value="sin-factura">Sin factura</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -64,7 +64,6 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
       nie: editingClient?.nie || "",
       budget: editingClient?.budget || "",
       budgetStatus: editingClient?.budgetStatus || "",
-      invoiceType: editingClient?.invoiceType || "",
     },
   });
 
@@ -88,7 +87,6 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
         nie: editingClient.nie || "",
         budget: editingClient.budget || "",
         budgetStatus: editingClient.budgetStatus || "",
-        invoiceType: editingClient.invoiceType || "",
       });
     } else {
       form.reset({
@@ -104,7 +102,6 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
         nie: "",
         budget: "",
         budgetStatus: "",
-        invoiceType: "",
       });
     }
   }, [editingClient, form]);
@@ -355,50 +352,26 @@ export default function NewClientModal({ open, onOpenChange, editingClient }: Ne
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="budget"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Presupuesto</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number"
-                        step="0.01"
-                        placeholder="1500.00" 
-                        {...field} 
-                        value={field.value || ""} 
-                        data-testid="input-client-budget" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="invoiceType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Facturación</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-client-invoice-type">
-                          <SelectValue placeholder="Seleccionar tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="con-factura">Con factura</SelectItem>
-                        <SelectItem value="sin-factura">Sin factura</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="budget"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Presupuesto</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number"
+                      step="0.01"
+                      placeholder="1500.00" 
+                      {...field} 
+                      value={field.value || ""} 
+                      data-testid="input-client-budget" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end space-x-3 pt-6 border-t border-border">
               <Button
