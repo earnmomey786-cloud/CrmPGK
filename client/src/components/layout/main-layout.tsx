@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,9 +11,27 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, title, onSearch }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('desktopSidebarCollapsed');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const isMobile = useIsMobile();
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('desktopSidebarCollapsed', JSON.stringify(isDesktopSidebarCollapsed));
+    }
+  }, [isDesktopSidebarCollapsed]);
+
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setIsSidebarOpen(!isSidebarOpen);
+    } else {
+      setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);
+    }
+  };
+  
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
@@ -30,6 +48,7 @@ export default function MainLayout({ children, title, onSearch }: MainLayoutProp
         isOpen={isSidebarOpen} 
         onClose={closeSidebar}
         isMobile={isMobile}
+        isCollapsed={isDesktopSidebarCollapsed}
       />
       
       <div className="flex-1 overflow-hidden">

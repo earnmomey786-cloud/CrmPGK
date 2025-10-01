@@ -13,8 +13,10 @@ import {
   Mail,
   MessageSquare,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -164,18 +166,58 @@ export default function Clients() {
     }
   };
 
+  const handleExportToExcel = () => {
+    const exportData = filteredClients.map(client => ({
+      'Nombre': client.name,
+      'Empresa': client.company || '',
+      'Email': client.email,
+      'Teléfono': client.phone,
+      'WhatsApp': client.whatsapp || '',
+      'Canal': client.channel || '',
+      'Categoría': client.category?.name || '',
+      'Estado': statusLabels[client.status as keyof typeof statusLabels] || client.status,
+      'NIE': client.nie || '',
+      'Presupuesto': client.budget || '',
+      'Estado Presupuesto': client.budgetStatus || '',
+      'Notas': client.notes || '',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes');
+    
+    const fileName = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast({
+      title: "Exportación exitosa",
+      description: `${filteredClients.length} cliente${filteredClients.length !== 1 ? 's' : ''} exportado${filteredClients.length !== 1 ? 's' : ''} a Excel.`,
+    });
+  };
+
   return (
     <MainLayout title="Gestión de Clientes" onSearch={setSearchQuery}>
       <div className="p-2 sm:p-3 lg:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground">Gestión de Clientes</h2>
-          <Button 
-            onClick={() => setShowNewClient(true)}
-            data-testid="button-new-client-page"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Cliente
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleExportToExcel}
+              disabled={filteredClients.length === 0}
+              data-testid="button-export-clients"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </Button>
+            <Button 
+              onClick={() => setShowNewClient(true)}
+              data-testid="button-new-client-page"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Cliente
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}

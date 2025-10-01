@@ -12,8 +12,10 @@ import {
   User,
   CheckSquare,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react";
+import * as XLSX from 'xlsx';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -174,21 +176,56 @@ export default function Tasks() {
     }
   };
 
+  const handleExportToExcel = () => {
+    const exportData = filteredTasks.map(task => ({
+      'Título': task.title,
+      'Cliente': task.client?.name || '',
+      'Prioridad': priorityLabels[task.priority as keyof typeof priorityLabels] || task.priority,
+      'Estado': statusLabels[task.status as keyof typeof statusLabels] || task.status,
+      'Fecha Vencimiento': task.dueDate ? format(new Date(task.dueDate), "dd/MM/yyyy HH:mm") : '',
+      'Descripción': task.description || '',
+      'Fecha Creación': task.createdAt ? format(new Date(task.createdAt), "dd/MM/yyyy HH:mm") : '',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tareas');
+    
+    const fileName = `tareas_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast({
+      title: "Exportación exitosa",
+      description: `${filteredTasks.length} tarea${filteredTasks.length !== 1 ? 's' : ''} exportada${filteredTasks.length !== 1 ? 's' : ''} a Excel.`,
+    });
+  };
+
   return (
     <MainLayout title="Gestión de Tareas" onSearch={setSearchQuery}>
       <div className="p-2 sm:p-3 lg:p-6 pb-20 sm:pb-24 lg:pb-32">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground">Gestión de Tareas</h2>
-          <Button 
-            onClick={() => {
-              setEditingTask(null);
-              setShowNewTask(true);
-            }}
-            data-testid="button-new-task-page"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Tarea
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleExportToExcel}
+              disabled={filteredTasks.length === 0}
+              data-testid="button-export-tasks"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </Button>
+            <Button 
+              onClick={() => {
+                setEditingTask(null);
+                setShowNewTask(true);
+              }}
+              data-testid="button-new-task-page"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Tarea
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}

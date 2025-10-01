@@ -23,9 +23,10 @@ interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   isMobile?: boolean;
+  isCollapsed?: boolean;
 }
 
-export default function Sidebar({ isOpen = false, onClose, isMobile = false }: SidebarProps) {
+export default function Sidebar({ isOpen = false, onClose, isMobile = false, isCollapsed = false }: SidebarProps) {
   const [location] = useLocation();
 
   const handleNavClick = () => {
@@ -34,21 +35,26 @@ export default function Sidebar({ isOpen = false, onClose, isMobile = false }: S
     }
   };
 
+  const shouldCollapse = !isMobile && isCollapsed;
+  const sidebarWidth = shouldCollapse ? 'w-16' : 'w-64';
+
   return (
     <div className={`
-      w-64 bg-card border-r border-border flex-shrink-0 flex flex-col transition-transform duration-300 ease-in-out
+      ${sidebarWidth} bg-card border-r border-border flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out
       ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
       ${isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0'}
     `}>
-      <div className="p-6">
+      <div className={`${shouldCollapse ? 'p-3' : 'p-6'}`}>
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
+          <div className={`flex items-center ${shouldCollapse ? 'justify-center w-full' : 'space-x-3'}`}>
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-card-foreground">CRM PGK</h1>
+            {!shouldCollapse && (
+              <h1 className="text-xl font-bold text-card-foreground">CRM PGK</h1>
+            )}
           </div>
-          {isMobile && (
+          {isMobile && !shouldCollapse && (
             <Button
               variant="ghost"
               size="icon"
@@ -67,16 +73,17 @@ export default function Sidebar({ isOpen = false, onClose, isMobile = false }: S
             return (
               <Link key={item.name} href={item.href}>
                 <div
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center ${shouldCollapse ? 'justify-center px-2' : 'space-x-3 px-3'} py-2 rounded-md transition-colors cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   }`}
                   data-testid={`nav-${item.name.toLowerCase()}`}
                   onClick={handleNavClick}
+                  title={shouldCollapse ? item.name : undefined}
                 >
                   <item.icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  {!shouldCollapse && <span>{item.name}</span>}
                 </div>
               </Link>
             );
@@ -84,15 +91,17 @@ export default function Sidebar({ isOpen = false, onClose, isMobile = false }: S
         </nav>
       </div>
       
-      <div className="mt-auto p-6 border-t border-border">
-        <div className="flex items-center space-x-3 text-sm text-muted-foreground">
-          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+      <div className={`mt-auto ${shouldCollapse ? 'p-3' : 'p-6'} border-t border-border`}>
+        <div className={`flex items-center ${shouldCollapse ? 'justify-center' : 'space-x-3'} text-sm text-muted-foreground`}>
+          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center" title={shouldCollapse ? "Admin Usuario" : undefined}>
             <User className="h-4 w-4" />
           </div>
-          <div>
-            <p className="font-medium text-card-foreground">Admin Usuario</p>
-            <p className="text-xs">admin@empresa.com</p>
-          </div>
+          {!shouldCollapse && (
+            <div>
+              <p className="font-medium text-card-foreground">Admin Usuario</p>
+              <p className="text-xs">admin@empresa.com</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
